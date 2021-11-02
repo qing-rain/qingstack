@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace QingStack.DeviceCenter.Infrastructure
+﻿namespace QingStack.DeviceCenter.Infrastructure
 {
     public class Class1
     {
