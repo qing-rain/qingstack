@@ -283,7 +283,7 @@ namespace QingStack.EventBus.RabbitMQ
                     {
                         if (_serviceProvider.GetService(subscription.HandlerType) is IDynamicIntegrationEventHandler handler)
                         {
-                            dynamic eventData = JsonSerializer.Deserialize<ExpandoObject>(message);
+                            dynamic? eventData = JsonSerializer.Deserialize<ExpandoObject>(message);
                             await handler.HandleAsync(eventData);
                         }
                     }
