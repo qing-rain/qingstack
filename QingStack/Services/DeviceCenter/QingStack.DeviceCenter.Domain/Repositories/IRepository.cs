@@ -7,8 +7,12 @@
 
     创建标识：QingRain - 20211108
 
+    修改标识：QingRain - 20211108
+    修改描述：仓储模式中支持规约查询
+
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Entities;
+using QingStack.DeviceCenter.Domain.Specifications;
 using QingStack.DeviceCenter.Domain.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -90,6 +94,35 @@ namespace QingStack.DeviceCenter.Domain.Repositories
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 规约查询集合
+        /// </summary>
+        /// <param name="specification"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<List<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 规约查询集合
+        /// </summary>
+        /// <typeparam name="TResult">指定实体输出</typeparam>
+        /// <param name="specification"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default);
+
+        Task<long> GetCountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
+
+        Task<TEntity> GetAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 规约查询
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<TResult> GetAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default);
+
 
         /// <summary>
         /// 任意查询
