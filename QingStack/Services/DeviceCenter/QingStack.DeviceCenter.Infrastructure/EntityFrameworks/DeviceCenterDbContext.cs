@@ -11,6 +11,7 @@
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
 using QingStack.DeviceCenter.Domain.UnitOfWork;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,5 +26,12 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         async Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => await base.SaveChangesAsync(cancellationToken);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            ///扫描当前执行程序集所有配置
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

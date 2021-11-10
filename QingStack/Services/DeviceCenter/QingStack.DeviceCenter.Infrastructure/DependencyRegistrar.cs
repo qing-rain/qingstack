@@ -11,9 +11,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure.Constants;
 using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
+using QingStack.DeviceCenter.Infrastructure.Repositories.Products;
 using System;
 using System.Reflection;
 
@@ -52,6 +54,9 @@ namespace QingStack.DeviceCenter.Infrastructure
 
             services.AddTransient(typeof(IRepository<>), typeof(DeviceCenterEfCoreRepository<>));
             services.AddTransient(typeof(IRepository<,>), typeof(DeviceCenterEfCoreRepository<,>));
+
+            //注入产品自定义仓储
+            services.AddTransient<IProductRepository, ProductRepository>();
             return services;
         }
     }
