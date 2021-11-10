@@ -8,20 +8,17 @@
     创建标识：QingRain - 20211110
 
  ----------------------------------------------------------------*/
+using QingStack.DeviceCenter.Domain.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate
 {
-    public class Tenant
+    public class Tenant : BaseAggregateRoot<Guid>
     {
-        /// <summary>
-        /// Null indicates the host.
-        /// Not null value for a tenant.
-        /// </summary>
-        public Guid? TenantId { get; }
+        public string Name { get; set; } = null!;
+
+        public List<TenantConnectionString> ConnectionStrings { get; protected set; } = new List<TenantConnectionString>();
     }
+
 }

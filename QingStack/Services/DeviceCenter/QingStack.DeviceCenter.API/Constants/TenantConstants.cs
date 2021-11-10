@@ -8,10 +8,6 @@
     创建标识：QingRain - 20211110
 
  ----------------------------------------------------------------*/
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.API.Constants
 {

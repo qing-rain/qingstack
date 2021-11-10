@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using QingStack.DeviceCenter.API.Constants;
 using QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -62,6 +61,6 @@ namespace QingStack.DeviceCenter.API.Extensions.Tenants
                 await next(context);
             }
         }
-     
+
     }
 }
