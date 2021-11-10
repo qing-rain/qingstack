@@ -6,6 +6,9 @@
 
 
     创建标识：QingRain - 20211108
+
+    修改标识：QingRain - 20211109
+    修改描述：增加析构元组
  ----------------------------------------------------------------*/
 using System;
 using System.Linq;
@@ -34,6 +37,16 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate
 
         public static implicit operator string(GeoCoordinate geo) => geo.ToString();
         /// <summary>
+        /// 析构元组
+        /// </summary>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        public void Deconstruct(out double? latitude, out double? longitude)
+        {
+            latitude = Latitude;
+            longitude = Longitude;
+        }
+        /// <summary>
         /// 字符串显式转换为经纬度实体
         /// </summary>
         /// <param name="str"></param>
@@ -53,12 +66,4 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate
             return geoCoordinate;
         }
     }
-    //class MyClass
-    //{
-    //    static void Main(string[] args)
-    //    {
-    //        GeoCoordinate get = (GeoCoordinate)"28,29";
-    //        string str = get;
-    //    }
-    //}
 }

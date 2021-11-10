@@ -11,16 +11,12 @@
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
 using QingStack.DeviceCenter.Domain.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
 {
-    public class DeviceCenterDbContext: DbContext, IUnitOfWork
+    public class DeviceCenterDbContext : DbContext, IUnitOfWork
     {
         public DeviceCenterDbContext(DbContextOptions<DeviceCenterDbContext> options) : base(options) { }
         /// <summary>

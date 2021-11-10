@@ -9,4 +9,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QingStack.DeviceCenter.Domain\QingStack.DeviceCenter.Domain.csproj" />
+    <ProjectReference Include="..\QingStack.DeviceCenter.Infrastructure\QingStack.DeviceCenter.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
