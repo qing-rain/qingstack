@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.Domain;
 using QingStack.DeviceCenter.Infrastructure;
 
@@ -28,6 +29,7 @@ namespace QingStack.DeviceCenter.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QingStack.DeviceCenter.API", Version = "v1" });
             });
+            services.AddTenantMiddleware();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,7 +47,8 @@ namespace QingStack.DeviceCenter.API
             app.UseRouting();
 
             app.UseAuthorization();
-
+            //注入租户中间件
+            app.UseTenantMiddleware();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -42,3 +42,22 @@
         }
     }
 ```
+
+```
+//一个线程租户切换
+//namespace ABC
+//{
+//    class MyClass
+//    {
+//        static void test(string[] args)
+//        {
+//            QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.ICurrentTenant currentTenant = null!;
+//            using (currentTenant.Change(Guid.NewGuid()))
+//            {
+//                currentTenant.Id //002
+//            }
+//            currentTenant.Id//001
+//        }
+//    }
+//}
+```
