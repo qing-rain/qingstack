@@ -14,23 +14,12 @@
     修改描述：解析验证器模型名称
 
  ----------------------------------------------------------------*/
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi.Models;
-using QingStack.DeviceCenter.API.Extensions.Tenants;
-using QingStack.DeviceCenter.Application;
-using QingStack.DeviceCenter.Domain;
-using QingStack.DeviceCenter.Domain.Repositories;
-using QingStack.DeviceCenter.Infrastructure;
-using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace QingStack.DeviceCenter.API
 {
@@ -46,77 +35,18 @@ namespace QingStack.DeviceCenter.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //本地化资源
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
-            services.AddDomainLayer();
-            services.AddInfrastructureLayer(Configuration).AddApplicationLayer();
-            services.AddTenantMiddleware();
-            services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies())).AddDataAnnotationsLocalization();
+
+            services.AddControllers().AddCustomExtensions();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QingStack.DeviceCenter.API", Version = "v1" });
             });
-            services.AddTenantMiddleware();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //多语言中间件
-            string[] supportedCultures = new[] { "zh-CN", "en-US" };
-            RequestLocalizationOptions localizationOptions = new()
-            {
-                ApplyCurrentCultureToResponseHeaders = false
-            };
-            //设置默认语言文化
-            localizationOptions.SetDefaultCulture(supportedCultures.First()).AddSupportedCultures(supportedCultures).AddSupportedUICultures(supportedCultures);
-            //拦截请求解析语言版本
-            app.UseRequestLocalization(localizationOptions);
 
-            app.UseTenantMiddleware();
-
-            //解析验证器模型名称
-            IStringLocalizerFactory? localizerFactory = app.ApplicationServices.GetService<IStringLocalizerFactory>();
-
-            FluentValidation.ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, lambdaExpression) =>
-            {
-                string? displayName = string.Empty;
-
-                DisplayAttribute? displayColumnAttribute = memberInfo.GetCustomAttributes(true).OfType<DisplayAttribute>().FirstOrDefault();
-
-                if (displayColumnAttribute is not null)
-                {
-                    displayName = displayColumnAttribute.Name;
-                }
-
-                DisplayNameAttribute? displayNameAttribute = memberInfo.GetCustomAttributes(true).OfType<DisplayNameAttribute>().FirstOrDefault();
-
-                if (displayNameAttribute is not null)
-                {
-                    displayName = displayNameAttribute.DisplayName;
-                }
-
-                if (!string.IsNullOrWhiteSpace(displayName) && localizerFactory is not null)
-                {
-                    return localizerFactory.Create(type)[displayName];
-                }
-
-                if (!string.IsNullOrWhiteSpace(displayName))
-                {
-                    return displayName;
-                }
-
-                return memberInfo.Name;
-            };
-            using (IServiceScope serviceScope = app.ApplicationServices.CreateScope())
-            {
-                var dataSeedProviders = serviceScope.ServiceProvider.GetServices<IDataSeedProvider>();
-
-                foreach (IDataSeedProvider dataSeedProvider in dataSeedProviders)
-                {
-                    dataSeedProvider.SeedAsync(serviceScope.ServiceProvider).Wait();
-                }
-            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -129,8 +59,6 @@ namespace QingStack.DeviceCenter.API
             app.UseRouting();
 
             app.UseAuthorization();
-            //注入租户中间件
-            app.UseTenantMiddleware();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
