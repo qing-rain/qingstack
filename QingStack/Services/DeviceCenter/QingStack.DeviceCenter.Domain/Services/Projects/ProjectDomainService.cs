@@ -7,9 +7,12 @@
 
     创建标识：QingRain - 20211108
 
+    修改标识：QingRain - 20211110
+    修改描述：增加项目删除领域事件
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Aggregates.ProjectAggregate;
 using QingStack.DeviceCenter.Domain.Constants;
+using QingStack.DeviceCenter.Domain.Events.Projects;
 using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Domain.Specifications;
 using System;
@@ -42,6 +45,7 @@ namespace QingStack.DeviceCenter.Domain.Services.Projects
 
         public async Task DeleteAsync(Project entity, CancellationToken cancellationToken = default)
         {
+            entity.AddDomainEvent(new ProjectDeletedDomainEvent { ProjectId = entity.Id, ProjectName = entity.Name });
 
             await _projectRepository.DeleteAsync(entity, true, cancellationToken);
         }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using QingStack.DeviceCenter.API.Extensions.Tenants;
+using QingStack.DeviceCenter.Application;
 using QingStack.DeviceCenter.Domain;
 using QingStack.DeviceCenter.Infrastructure;
 
@@ -23,7 +24,7 @@ namespace QingStack.DeviceCenter.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDomainLayer();
-            services.AddInfrastructureLayer(Configuration);
+            services.AddInfrastructureLayer(Configuration).AddApplicationLayer();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

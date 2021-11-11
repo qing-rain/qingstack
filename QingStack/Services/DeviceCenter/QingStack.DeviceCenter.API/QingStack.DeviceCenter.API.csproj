@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\QingStack.DeviceCenter.Application\QingStack.DeviceCenter.Application.csproj" />
     <ProjectReference Include="..\QingStack.DeviceCenter.Domain\QingStack.DeviceCenter.Domain.csproj" />
     <ProjectReference Include="..\QingStack.DeviceCenter.Infrastructure\QingStack.DeviceCenter.Infrastructure.csproj" />
   </ItemGroup>
