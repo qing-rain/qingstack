@@ -39,7 +39,7 @@ namespace QingStack.DeviceCenter.API
             services.AddControllers().AddCustomExtensions();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "QingStack.DeviceCenter.API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Device Center API", Version = "v1" });
             });
         }
 
@@ -51,9 +51,15 @@ namespace QingStack.DeviceCenter.API
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "QingStack.DeviceCenter.API v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device Center API v1");
+                    c.DocumentTitle = "Device Center API Document";
+                    //设置加载界面
+                    c.IndexStream = () => GetType().Assembly.GetManifestResourceStream($"{GetType().Assembly.GetName().Name}.Infrastructure.Swagger.Index.html");
+                });
             }
-
+           
             app.UseHttpsRedirection();
 
             app.UseRouting();
