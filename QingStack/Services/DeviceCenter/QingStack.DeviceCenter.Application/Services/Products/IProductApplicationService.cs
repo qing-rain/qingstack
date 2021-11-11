@@ -9,21 +9,15 @@
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Products;
+using QingStack.DeviceCenter.Application.Services.Generics;
+using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using System;
 using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Application.Services.Products
 {
-    public interface IProductApplicationService
+    public interface IProductApplicationService : ICrudApplicationService<Guid, ProductGetResponseModel, PagedRequestModel, ProductGetResponseModel, ProductCreateOrUpdateRequestModel, ProductCreateOrUpdateRequestModel>
     {
-        Task<ProductGetResponseModel> CreateAsync(ProductCreateOrUpdateRequestModel requestModel);
-
-        Task DeleteAsync(Guid id);
-
-        Task<ProductGetResponseModel> UpdateAsync(ProductCreateOrUpdateRequestModel requestModel);
-
-        Task<ProductGetResponseModel> GetAsync(Guid id);
-
-        Task<PagedResponseModel<ProductGetResponseModel>> GetListAsync(PagedRequestModel requestModel);
+        Task<Product> GetByName(string productName);
     }
 }
