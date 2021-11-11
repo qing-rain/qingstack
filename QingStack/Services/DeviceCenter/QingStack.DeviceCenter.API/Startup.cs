@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.Application;
 using QingStack.DeviceCenter.Domain;
+using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure;
 
 namespace QingStack.DeviceCenter.API
@@ -25,6 +26,7 @@ namespace QingStack.DeviceCenter.API
         {
             services.AddDomainLayer();
             services.AddInfrastructureLayer(Configuration).AddApplicationLayer();
+            services.AddTenantMiddleware();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -36,6 +38,17 @@ namespace QingStack.DeviceCenter.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseTenantMiddleware();
+
+            using (IServiceScope serviceScope = app.ApplicationServices.CreateScope())
+            {
+                var dataSeedProviders = serviceScope.ServiceProvider.GetServices<IDataSeedProvider>();
+
+                foreach (IDataSeedProvider dataSeedProvider in dataSeedProviders)
+                {
+                    dataSeedProvider.SeedAsync(serviceScope.ServiceProvider).Wait();
+                }
+            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

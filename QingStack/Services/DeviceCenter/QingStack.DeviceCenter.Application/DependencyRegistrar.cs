@@ -6,14 +6,14 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211111
+    修改描述：注入产品应用服务
  ----------------------------------------------------------------*/
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using QingStack.DeviceCenter.Application.Services.Products;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Application
 {
@@ -22,12 +22,21 @@ namespace QingStack.DeviceCenter.Application
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
         {
             services.AddDomainEvents();
+
+            //注入应用服务
+            services.AddApplicationServices();
             return services;
         }
         private static IServiceCollection AddDomainEvents(this IServiceCollection services)
         {
             services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 
+            return services;
+        }
+        private static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        {
+
+            services.AddTransient<IProductApplicationService, ProductApplicationService>();
             return services;
         }
     }
