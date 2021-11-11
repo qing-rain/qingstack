@@ -10,6 +10,9 @@
     修改标识：QingRain - 20211111
     修改描述：注入本地化资源、多语言设置
 
+    修改标识：QingRain - 20211111
+    修改描述：解析验证器模型名称
+
  ----------------------------------------------------------------*/
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +20,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi.Models;
 using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.Application;
@@ -24,6 +28,8 @@ using QingStack.DeviceCenter.Domain;
 using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure;
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace QingStack.DeviceCenter.API
@@ -69,6 +75,39 @@ namespace QingStack.DeviceCenter.API
 
             app.UseTenantMiddleware();
 
+            //解析验证器模型名称
+            IStringLocalizerFactory? localizerFactory = app.ApplicationServices.GetService<IStringLocalizerFactory>();
+
+            FluentValidation.ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, lambdaExpression) =>
+            {
+                string? displayName = string.Empty;
+
+                DisplayAttribute? displayColumnAttribute = memberInfo.GetCustomAttributes(true).OfType<DisplayAttribute>().FirstOrDefault();
+
+                if (displayColumnAttribute is not null)
+                {
+                    displayName = displayColumnAttribute.Name;
+                }
+
+                DisplayNameAttribute? displayNameAttribute = memberInfo.GetCustomAttributes(true).OfType<DisplayNameAttribute>().FirstOrDefault();
+
+                if (displayNameAttribute is not null)
+                {
+                    displayName = displayNameAttribute.DisplayName;
+                }
+
+                if (!string.IsNullOrWhiteSpace(displayName) && localizerFactory is not null)
+                {
+                    return localizerFactory.Create(type)[displayName];
+                }
+
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    return displayName;
+                }
+
+                return memberInfo.Name;
+            };
             using (IServiceScope serviceScope = app.ApplicationServices.CreateScope())
             {
                 var dataSeedProviders = serviceScope.ServiceProvider.GetServices<IDataSeedProvider>();

@@ -15,6 +15,9 @@
 
     修改标识：QingRain - 20211111
     修改描述：注入FluentValidation验证器
+
+    修改标识：QingRain - 20211111
+    修改描述：添加自定义验证器错误提示扩展
  ----------------------------------------------------------------*/
 using FluentValidation;
 using MediatR;
@@ -40,6 +43,8 @@ namespace QingStack.DeviceCenter.Application
             //注入应用服务
             services.AddApplicationServices();
 
+            //自定义验证器提示扩展
+            ValidatorOptions.Global.LanguageManager = new Extensions.Validators.CustomLanguageManager();
             //注入验证器
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             return services;
