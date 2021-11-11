@@ -1,3 +1,4 @@
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +10,7 @@ using QingStack.DeviceCenter.Application;
 using QingStack.DeviceCenter.Domain;
 using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure;
+using System;
 
 namespace QingStack.DeviceCenter.API
 {
@@ -27,7 +29,7 @@ namespace QingStack.DeviceCenter.API
             services.AddDomainLayer();
             services.AddInfrastructureLayer(Configuration).AddApplicationLayer();
             services.AddTenantMiddleware();
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "QingStack.DeviceCenter.API", Version = "v1" });

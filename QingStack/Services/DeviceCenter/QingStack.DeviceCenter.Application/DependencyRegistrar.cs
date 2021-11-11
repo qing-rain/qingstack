@@ -12,7 +12,11 @@
 
     修改标识：QingRain - 20211111
     修改描述：注入Project泛型CRUD服务、AutoMapper
+
+    修改标识：QingRain - 20211111
+    修改描述：注入FluentValidation验证器
  ----------------------------------------------------------------*/
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Application.Models.Generics;
@@ -21,6 +25,7 @@ using QingStack.DeviceCenter.Application.Services.Generics;
 using QingStack.DeviceCenter.Application.Services.Products;
 using QingStack.DeviceCenter.Application.Services.Projects;
 using System;
+using System.Reflection;
 
 namespace QingStack.DeviceCenter.Application
 {
@@ -34,6 +39,9 @@ namespace QingStack.DeviceCenter.Application
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             //注入应用服务
             services.AddApplicationServices();
+
+            //注入验证器
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             return services;
         }
         private static IServiceCollection AddDomainEvents(this IServiceCollection services)

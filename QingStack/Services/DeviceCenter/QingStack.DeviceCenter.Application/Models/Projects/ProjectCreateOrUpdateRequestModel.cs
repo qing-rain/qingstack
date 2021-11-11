@@ -7,6 +7,9 @@
 
     创建标识：QingRain - 20211111
 
+    修改标识：QingRain - 20211111
+    修改描述：增加模型验证机制
+
  ----------------------------------------------------------------*/
 using System;
 using System.ComponentModel.DataAnnotations;
