@@ -59,7 +59,7 @@ namespace QingStack.DeviceCenter.API
                     c.IndexStream = () => GetType().Assembly.GetManifestResourceStream($"{GetType().Assembly.GetName().Name}.Infrastructure.Swagger.Index.html");
                 });
             }
-           
+
             app.UseHttpsRedirection();
 
             app.UseRouting();

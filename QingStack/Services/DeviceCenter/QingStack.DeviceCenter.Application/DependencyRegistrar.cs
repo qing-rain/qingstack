@@ -18,6 +18,9 @@
 
     修改标识：QingRain - 20211111
     修改描述：添加自定义验证器错误提示扩展
+
+    修改标识：QingRain - 20211111
+    修改描述：注入权限定义提供者、权限定义管理器
  ----------------------------------------------------------------*/
 using FluentValidation;
 using MediatR;
@@ -25,9 +28,11 @@ using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
 using QingStack.DeviceCenter.Application.Services.Generics;
+using QingStack.DeviceCenter.Application.Services.Permissions;
 using QingStack.DeviceCenter.Application.Services.Products;
 using QingStack.DeviceCenter.Application.Services.Projects;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace QingStack.DeviceCenter.Application
@@ -42,7 +47,8 @@ namespace QingStack.DeviceCenter.Application
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             //注入应用服务
             services.AddApplicationServices();
-
+            //注入权限相关服务
+            services.AddAuthorization();
             //自定义验证器提示扩展
             ValidatorOptions.Global.LanguageManager = new Extensions.Validators.CustomLanguageManager();
             //注入验证器
@@ -60,6 +66,19 @@ namespace QingStack.DeviceCenter.Application
             //注入Project泛型CRUD服务
             services.AddTransient(typeof(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel>), typeof(ProjectApplicationService));
             services.AddTransient<IProductApplicationService, ProductApplicationService>();
+            return services;
+        }
+        private static IServiceCollection AddAuthorization(this IServiceCollection services)
+        {
+            //权限定义管理器
+            services.AddSingleton<IPermissionDefinitionManager, PermissionDefinitionManager>();
+            //注入权限定义提供者
+            var exportedTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).Where(t => t.IsClass);
+
+            var permissionDefinitionProviders = exportedTypes.Where(t => t.IsAssignableTo(typeof(IPermissionDefinitionProvider)));
+            permissionDefinitionProviders.ToList().ForEach(t => services.AddSingleton(typeof(IPermissionDefinitionProvider), t));
+
+
             return services;
         }
     }
