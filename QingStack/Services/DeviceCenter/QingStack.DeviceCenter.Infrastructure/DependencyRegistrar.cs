@@ -7,14 +7,18 @@
 
     创建标识：QingRain - 20211109
 
+    修改标识：QingRain - 20211111
+    修改描述：注入权限授予自定义仓储
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using QingStack.DeviceCenter.Domain.Aggregates.PermissionAggregate;
 using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure.Constants;
 using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
+using QingStack.DeviceCenter.Infrastructure.Repositories.Permissions;
 using QingStack.DeviceCenter.Infrastructure.Repositories.Products;
 using System;
 using System.Reflection;
@@ -57,6 +61,9 @@ namespace QingStack.DeviceCenter.Infrastructure
 
             //注入产品自定义仓储
             services.AddTransient<IProductRepository, ProductRepository>();
+
+            //注入权限授予自定义仓储
+            services.AddTransient<IPermissionGrantRepository, PermissionGrantRepository>();
             return services;
         }
     }

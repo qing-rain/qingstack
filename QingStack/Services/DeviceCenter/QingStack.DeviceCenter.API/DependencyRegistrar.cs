@@ -15,6 +15,9 @@
 
     修改标识：QingRain - 20211111
     修改描述：注入授权策略提供者
+
+    修改标识：QingRain - 20210311
+    修改描述：注入注入HttpContext访问器、权限检查器、权限需求处理器
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.API.Extensions.Authorization;
 using QingStack.DeviceCenter.API.Extensions.Hosting;
 using QingStack.DeviceCenter.API.Extensions.Tenants;
+using QingStack.DeviceCenter.Application.Services.Permissions;
 
 namespace QingStack.DeviceCenter.API
 {
@@ -35,9 +39,16 @@ namespace QingStack.DeviceCenter.API
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             //添加租户中间件
             services.AddTenantMiddleware();
-
+            //注入HttpContext访问器
+            services.AddHttpContextAccessor();
             //注入授权策略提供者
             services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
+
+            //注入权限检查器
+            services.AddTransient<IPermissionChecker, PermissionChecker>();
+
+            //注入权限需求处理器
+            services.AddTransient<IAuthorizationHandler, PermissionRequirementHandler>();
             return services;
         }
     }
