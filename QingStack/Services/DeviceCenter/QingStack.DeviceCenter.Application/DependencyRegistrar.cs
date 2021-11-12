@@ -24,6 +24,9 @@
 
     修改标识：QingRain - 20211111
     修改描述：注入分布式缓存、权限授予仓储、注入权限值定义提供者
+
+    修改标识：QingRain - 20211112
+    修改描述：注入权限应用服务
  ----------------------------------------------------------------*/
 using FluentValidation;
 using MediatR;
@@ -69,6 +72,9 @@ namespace QingStack.DeviceCenter.Application
             //注入Project泛型CRUD服务
             services.AddTransient(typeof(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel>), typeof(ProjectApplicationService));
             services.AddTransient<IProductApplicationService, ProductApplicationService>();
+
+            //注入权限应用服务
+            services.AddTransient<IPermissionApplicationService, PermissionApplicationService>();
             return services;
         }
         private static IServiceCollection AddAuthorization(this IServiceCollection services)
@@ -89,7 +95,7 @@ namespace QingStack.DeviceCenter.Application
 
             //注入权限值提供者
             var permissionValueProviders = exportedTypes.Where(t => t.IsAssignableTo(typeof(IPermissionValueProvider)));
-            permissionValueProviders.ToList().ForEach(t => services.AddSingleton(typeof(IPermissionValueProvider), t));
+            permissionValueProviders.ToList().ForEach(t => services.AddTransient(typeof(IPermissionValueProvider), t));
             return services;
         }
     }
