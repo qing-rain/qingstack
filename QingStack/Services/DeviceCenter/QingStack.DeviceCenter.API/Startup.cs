@@ -13,6 +13,9 @@
     修改标识：QingRain - 20211111
     修改描述：解析验证器模型名称
 
+    修改标识：QingRain - 20211113
+    修改描述：调整Swagger配置
+
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,6 +23,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using QingStack.DeviceCenter.API.Infrastructure.Swagger;
+using System;
+using System.Collections.Generic;
 
 namespace QingStack.DeviceCenter.API
 {
@@ -40,6 +46,30 @@ namespace QingStack.DeviceCenter.API
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Device Center API", Version = "v1" });
+                //注入操作过滤器
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
+
+                //点击锁进行授权登录
+                string identityServer = Configuration.GetValue<string>("IdentityServer:AuthorizationUrl");
+
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri($"{identityServer}/connect/authorize"),
+                            TokenUrl = new Uri($"{identityServer}/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                //设置权限范围
+                                { "openid", "Your user identifier" },
+                                { "devicecenter", "Device Center API" }
+                            }
+                        }
+                    }
+                });
             });
         }
 
@@ -50,21 +80,28 @@ namespace QingStack.DeviceCenter.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device Center API v1");
-                    c.DocumentTitle = "Device Center API Document";
-                    //设置加载界面
-                    c.IndexStream = () => GetType().Assembly.GetManifestResourceStream($"{GetType().Assembly.GetName().Name}.Infrastructure.Swagger.Index.html");
-                });
-            }
 
+            }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device Center API v1");
+                c.DocumentTitle = "Device Center API Document";
+                //设置加载界面
+                c.IndexStream = () => GetType().Assembly.GetManifestResourceStream($"{GetType().Assembly.GetName().Name}.Infrastructure.Swagger.Index.html");
+
+
+                c.OAuthClientId("devicecenterswagger");
+                c.OAuthClientSecret("secret");
+                c.OAuthAppName("Device Center Swagger");
+                c.OAuthUsePkce();
+            });
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            //认证、授权
+            app.UseAuthentication().UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

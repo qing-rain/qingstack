@@ -7,6 +7,7 @@
 
     创建标识：QingRain - 20211111
  ----------------------------------------------------------------*/
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Products;
@@ -18,6 +19,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "role2")]
     public class ProductsController : ControllerBase
     {
         private readonly IProductApplicationService _productService;
@@ -51,7 +53,7 @@ namespace QingStack.DeviceCenter.API.Controllers
             return await _productService.UpdateAsync(value);
         }
         [HttpDelete("{id}")]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         public async Task Delete(Guid id)
         {
             await _productService.DeleteAsync(id);

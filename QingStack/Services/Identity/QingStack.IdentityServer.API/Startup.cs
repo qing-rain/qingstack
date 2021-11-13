@@ -17,6 +17,9 @@
 
     修改标识：QingRain - 20211113
     修改描述：读取证书
+
+    修改标识：QingRain - 20211113
+    修改描述：注入允许跨域请求地址
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -146,7 +149,12 @@ namespace QingStack.IdentityServer.API
                 weChatOptions.RemoteAuthenticationTimeout = TimeSpan.FromDays(15);
                 weChatOptions.CorrelationCookie.SameSite = SameSiteMode.Lax;
             });
-
+            //注入允许跨域请求地址
+            services.AddCors(options =>
+            {
+                string[] allowedOrigins = Configuration.GetSection("AllowedOrigins").Get<string[]>();
+                options.AddDefaultPolicy(builder => builder.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
             //注入发送邮件、短信功能
             services.AddTransient<IEmailSender, AuthMessageSender>().AddTransient<ISmsSender, AuthMessageSender>();
         }
@@ -178,6 +186,8 @@ namespace QingStack.IdentityServer.API
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            //注入跨域请求中间件
+            app.UseCors();
             //IdentityServer中间件
             app.UseIdentityServer();
             app.UseRouting();

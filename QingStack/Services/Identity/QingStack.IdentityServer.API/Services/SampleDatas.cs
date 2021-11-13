@@ -13,164 +13,182 @@ using IdentityServer4;
 using IdentityServer4.Models;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace QingStack.IdentityServer.API.Services
 {
     public static class SampleDatas
     {
-        /// <summary>
-        /// ApiResources define the apis in your system
-        /// </summary>
-        public static IEnumerable<IdentityResource> Ids =>
-            new List<IdentityResource>
+        public static IEnumerable<IdentityResource> Ids => new List<IdentityResource>
+        {
+            new IdentityResources.OpenId(),
+            new IdentityResources.Profile(),
+            new IdentityResource("userinfo", "Your user information", new []
             {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
-                new IdentityResource("custom_profile",new []{ JwtClaimTypes.Role,JwtRegisteredClaimNames.UniqueName})
-            };
+                JwtClaimTypes.Role,
+                JwtRegisteredClaimNames.UniqueName,
+                JwtClaimTypes.NickName,
+                JwtClaimTypes.Address,
+                JwtClaimTypes.Email
+            })
+        };
 
-        /// <summary>
-        /// Identity resources are data like user ID, name, or email address of a user
-        /// </summary>
         public static IEnumerable<ApiResource> Apis => new List<ApiResource>
+        {
+            new ApiResource("devicecenterapi", "Device Center API",new []{ JwtClaimTypes.Email })
             {
-                new ApiResource("api1", "My API",new []{ JwtClaimTypes.Role})
-                {
-                    Scopes= { "api1.read","api1.write" }
+                Scopes= { "openapi", "devicecenter" }
+            },
+            new ApiResource("identityserverapi", "Identity Server API",new []{ JwtClaimTypes.PhoneNumber,JwtClaimTypes.Gender})
+            {
+                Scopes= { "openapi", "identityserver" }
+            }
+        };
+
+        public static IEnumerable<ApiScope> ApiScopes => new List<ApiScope>
+        {
+            new ApiScope("openapi", "All open web api", new []{ JwtClaimTypes.Role, JwtClaimTypes.Name}),
+            new ApiScope("identityserver", "Identity server api", new []{ JwtClaimTypes.Role, JwtClaimTypes.Name}),
+            new ApiScope("devicecenter", "Device center api", new []{ JwtClaimTypes.Role, JwtClaimTypes.Name})
+        };
+
+        public static IEnumerable<Client> Clients => new List<Client>
+        {
+            new Client
+            {
+                ClientId = "devicecenterswagger",
+                ClientName = "Device Center Swagger",
+                ClientSecrets = { new Secret("secret".Sha256())},
+                AllowedGrantTypes = GrantTypes.Code,
+                AllowAccessTokensViaBrowser = true,
+                RequireClientSecret=false,
+                AlwaysSendClientClaims=true,
+                AlwaysIncludeUserClaimsInIdToken=true,
+                RequireConsent = true,
+                RedirectUris = {
+                    "https://localhost:6001/swagger/oauth2-redirect.html",
+                    "https://devicecenterapi.qingrain.com:6001/swagger/oauth2-redirect.html"
                 },
-                new ApiResource("devicecenterapi", "Device Center API",new []{ JwtClaimTypes.Role})
+                PostLogoutRedirectUris = {
+                    "https://localhost:6001/swagger",
+                    "https://devicecenterapi.qingrain.com:6001/swagger"
+                },
+                AllowOfflineAccess=true,
+                RequirePkce = true,
+                AllowedScopes =
                 {
-                    Scopes= { "devicecenter"}
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "devicecenter"
                 }
-            };
-
-        /// <summary>
-        /// client want to access resources (aka scopes)
-        /// </summary>
-        public static IEnumerable<ApiScope> ApiScopes =>
-            new List<ApiScope>
+            },
+            new Client
             {
-                new ApiScope("api1.read",new []{ JwtRegisteredClaimNames.UniqueName}),
-                new ApiScope("api1.write"),
-                new ApiScope("devicecenter"),
-            };
-
-        /// <summary>
-        /// client want to access resources (aka scopes)
-        /// </summary>
-        public static IEnumerable<Client> Clients =>
-            new List<Client>
-            {
-                new Client
-                {
-                    ClientId = "devicecenterswaggerui",
-                    ClientName = "Device Center Swagger UI",
-                    ClientSecrets = { new Secret("secret".Sha256())},
-                    AllowedGrantTypes = GrantTypes.Code,
-                    AllowAccessTokensViaBrowser = true,
-                    AlwaysSendClientClaims=true,
-                    AlwaysIncludeUserClaimsInIdToken=true,
-                    RequireConsent = true,
-                    RedirectUris = { "https://localhost:6001/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { "https://localhost:6001/swagger" },
-                    AllowedCorsOrigins = { "https://localhost:6001" },
-                    AllowOfflineAccess=true,
-                    RequirePkce = true,
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        "devicecenter",
-                        "custom_profile"
-                    }
+                ClientId = "identityserverswagger",
+                ClientName = "Identity Server Swagger",
+                ClientSecrets = { new Secret("secret".Sha256())},
+                AllowedGrantTypes = GrantTypes.Code,
+                AllowAccessTokensViaBrowser = true,
+                RequireClientSecret=false,
+                AlwaysSendClientClaims=true,
+                AlwaysIncludeUserClaimsInIdToken=true,
+                RequireConsent = true,
+                RedirectUris = {
+                    "https://localhost:5001/swagger/oauth2-redirect.html",
+                    "https://identityserver.qingrain.com:5001/swagger/oauth2-redirect.html"
                 },
-
-                // machine to machine client
-                new Client
-                {
-                    ClientId = "client",
-                    ClientSecrets = { new Secret("secret".Sha256()) },
-                    
-                    //ClientClaimsPrefix=string.Empty,
-                    Claims=
-                    {
-                        new ClientClaim(JwtClaimTypes.Role, "client-role"),
-                        new ClientClaim(JwtRegisteredClaimNames.UniqueName, "console-client")
-                    },
-
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    // scopes that client has access to
-                    AllowedScopes = { "api1.read" }
+                PostLogoutRedirectUris = {
+                    "https://localhost:5001/swagger",
+                    "https://identityserver.qingrain.com:5001/swagger"
                 },
-
-                // interactive ASP.NET Core MVC client
-                new Client
+                AllowOfflineAccess=true,
+                RequirePkce = true,
+                AllowedScopes =
                 {
-                    ClientId = "mvc",
-                    ClientSecrets = { new Secret("secret".Sha256())},
-
-                    //ClientClaimsPrefix=string.Empty,
-                    Claims=
-                    {
-                        new ClientClaim(JwtClaimTypes.Role, "client-role"),
-                        new ClientClaim(JwtRegisteredClaimNames.UniqueName, "mvc-client")
-                    },
-                    AlwaysSendClientClaims=true,
-                    AlwaysIncludeUserClaimsInIdToken=true,
-
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RequireConsent = true,
-                    RequirePkce = true,
-
-                    // where to redirect to after login
-                    RedirectUris = { "https://localhost:5002/signin-oidc" },
-
-                    // where to redirect to after logout
-                    PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
-
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                         "api1.write",
-                         "custom_profile"
-                    },
-
-                    AllowOfflineAccess=true,
-                },
-
-                // JavaScript Client
-                new Client
-                {
-                    ClientId = "js",
-                    ClientName = "JavaScript Client",
-
-                    //ClientClaimsPrefix=string.Empty,
-                    Claims=
-                    {
-                        new ClientClaim(JwtClaimTypes.Role, "client-role"),
-                        new ClientClaim(JwtRegisteredClaimNames.UniqueName, "js-client")
-                    },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RequirePkce = true,
-                    RequireClientSecret = false,
-
-                    RedirectUris = { "https://localhost:5003/callback.html" },
-                    PostLogoutRedirectUris = { "https://localhost:5003/index.html" },
-                    AllowedCorsOrigins = { "https://localhost:5003" },
-
-                    AlwaysSendClientClaims=true,
-                    AlwaysIncludeUserClaimsInIdToken=true,
-
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        "api1.read",
-                        "custom_profile"
-                    }
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "identityserver"
                 }
+            },
+            new Client
+            {
+                ClientId = "devicecenterweb",
+                ClientName = "Device Center Web",
+                AllowedGrantTypes = GrantTypes.Code,
+                AllowAccessTokensViaBrowser = true,
+                RequireClientSecret=false,
+                AlwaysSendClientClaims=true,
+                AlwaysIncludeUserClaimsInIdToken=true,
+                RequireConsent = true,
+                RedirectUris = {
+                    "http://localhost:8000/authorization/login-callback",
+                    "http://localhost:8000/authorization/logincallback",
+                    "https://cloud.sctshd.com/authorization/logincallback",
+                    "http://localhost:8000/login-callback.html",
+                    "https://cloud.qingrain.com:8001/authorization/login-callback"
+                },
+                PostLogoutRedirectUris = {
+                    "http://localhost:8000/authorization/logout-callback",
+                    "http://localhost:8000/authorization/logoutcallback",
+                    "https://cloud.sctshd.com/authorization/logoutcallback",
+                    "http://localhost:8000/logout-callback.html",
+                    "https://cloud.qingrain.com:8001/authorization/logout-callback"
+                },
+                AllowOfflineAccess=true,
+                RequirePkce = true,
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "userinfo",
+                    "openapi",
+                    "identityserver",
+                    "devicecenter"
+                }
+            }
+        };
+
+        public static IEnumerable<(int UserId, string UserName, string Password, string PhoneNumber, string Email, IEnumerable<Claim> Claims)> Users()
+        {
+            var result = new List<(int UserId, string UserName, string Password, string PhoneNumber, string Email, IEnumerable<Claim> Claims)>
+            {
+                (UserId:1, UserName:"user1", Password: "user1", PhoneNumber:"13789685636", Email:"user1@qingrain.com", new Claim[]
+                {
+                    new(JwtClaimTypes.Gender, "male", ClaimValueTypes.String),
+                    new(JwtClaimTypes.BirthDate, "1992-11-10", ClaimValueTypes.Date),
+                    new(JwtClaimTypes.Role, "role1", ClaimValueTypes.String)
+                }),
+
+                (UserId:2, UserName:"user2", Password: "user2", PhoneNumber:"18965636598", Email:"user2@qingrain.com", new Claim[]
+                {
+                    new(JwtClaimTypes.NickName, "female", ClaimValueTypes.String),
+                    new(JwtClaimTypes.BirthDate, "1996-06-12", ClaimValueTypes.Date),
+                    new(JwtClaimTypes.Role, "role2", ClaimValueTypes.String)
+                }),
+
+                (UserId:3, UserName:"user3", Password: "user3", PhoneNumber:"13656598653", Email:"user3@qingrain.com", new Claim[]
+                {
+                    new(JwtClaimTypes.Gender, "male", ClaimValueTypes.String),
+                    new(JwtClaimTypes.BirthDate, "1998-03-18", ClaimValueTypes.Date),
+                    new(JwtClaimTypes.Role, "IdentityManager", ClaimValueTypes.String),
+                    new(JwtClaimTypes.Role, "role1", ClaimValueTypes.String),
+                    new(JwtClaimTypes.Role, "role2", ClaimValueTypes.String)
+                })
             };
+
+            System.Random random = new(System.Environment.TickCount);
+
+            for (int i = 5; i < 100; i++)
+            {
+                result.Add((UserId: i, UserName: $"user{i}", Password: $"user{i}", PhoneNumber: $"{random.Next(130, 190)}{random.Next(10000000, 99999999)}", Email: $"{System.IO.Path.GetRandomFileName().Replace(".", string.Empty)}@qingrain.com", new Claim[]
+                {
+                    new(JwtClaimTypes.Role, "IdentityManager", ClaimValueTypes.String),
+                    new(JwtClaimTypes.Role, "role1", ClaimValueTypes.String),
+                    new(JwtClaimTypes.Role, "role2", ClaimValueTypes.String)
+                }));
+            }
+
+            return result;
+        }
     }
 }
