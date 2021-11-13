@@ -353,6 +353,74 @@ namespace QingStack.IdentityServer.API.Controllers
             return View(model);
         }
 
+
+        /// <summary>
+        /// 引导第三方登录
+        /// </summary>
+        /// <param name="provider">第三方类型，界面传入名称和依赖注入名称要一致</param>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = "~/")
+        {
+            // validate returnUrl - either it is a valid OIDC URL or back to a local page
+            if (Url.IsLocalUrl(returnUrl) == false && !_interactionService.IsValidReturnUrl(returnUrl))
+            {
+                // user might have clicked on a malicious link - should be logged
+                throw new Exception("invalid return url");
+            }
+
+            // Request a redirect to the external login provider.
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), new { ReturnUrl = returnUrl });//第三方登录后回调
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+
+            return Challenge(properties, provider);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+                return View(nameof(Login));
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+
+            if (info is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            ApplicationUser user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+            if (user is not null)
+            {
+                await _signInManager.SignInAsync(user, true);
+            }
+
+            // Sign in the user with this external login provider if the user already has a login.
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+
+            if (result.Succeeded && returnUrl is not null && user is not null)
+            {
+                // Update any authentication tokens if login succeeded
+                await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
+                _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
+
+                return RedirectToLocal(returnUrl);
+            }
+
+            return View(viewName: nameof(Register));
+        }
+
         //Identity错误转换为模型错误信息
         private void AddErrors(IdentityResult result)
         {
