@@ -14,6 +14,9 @@
 
     修改标识：QingRain - 20211113
     修改描述：注入短信功能、读取阿里巴巴配置信息、阿里云认证处理器、增加阿里云http客户端容器 消息处理中间件、发送邮件、分布式缓存
+
+    修改标识：QingRain - 20211113
+    修改描述：读取证书
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +26,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using QingStack.IdentityServer.API.Aggregates;
+using QingStack.IdentityServer.API.Certificates;
 using QingStack.IdentityServer.API.Constants;
 using QingStack.IdentityServer.API.EntityFrameworks;
 using QingStack.IdentityServer.API.Infrastructure.Aliyun;
@@ -76,7 +80,8 @@ namespace QingStack.IdentityServer.API
 
             //注入IdentityServer
             services.AddIdentityServer().AddAspNetIdentity<ApplicationUser>()
-              .AddDeveloperSigningCredential()
+              //.AddDeveloperSigningCredential()
+              .AddSigningCredential(Certificate.Get())
               //客户端配置数据
               .AddConfigurationStore(options =>
               {

@@ -7,7 +7,12 @@
 
     创建标识：QingRain - 20211113
  ----------------------------------------------------------------*/
+using IdentityModel;
+using IdentityServer4;
+using IdentityServer4.Extensions;
+using IdentityServer4.Models;
 using IdentityServer4.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +25,7 @@ using QingStack.IdentityServer.API.Models.AccountViewModels;
 using QingStack.IdentityServer.API.Services;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace QingStack.IdentityServer.API.Controllers
@@ -232,6 +238,121 @@ namespace QingStack.IdentityServer.API.Controllers
             // If we got this far, something failed, redisplay form
             return View(model);
         }
+        /// <summary>
+        /// 登出
+        /// </summary>
+        /// <param name="logoutId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> Logout(string logoutId)
+        {
+            //没有登录 直接退出
+            if (User.Identity?.IsAuthenticated == false)
+            {
+                // if the user is not authenticated, then just show logged out page
+                return await Logout(new LogoutViewModel { LogoutId = logoutId });
+            }
+
+            //登出确认
+            //Test for Xamarin. 
+            LogoutRequest logoutRequest = await _interactionService.GetLogoutContextAsync(logoutId);
+            if (logoutRequest?.ShowSignoutPrompt == false)
+            {
+                //it's safe to automatically sign-out
+                return await Logout(new LogoutViewModel { LogoutId = logoutId });
+            }
+
+            // show the logout prompt. this prevents attacks where the user
+            // is automatically signed out by another malicious web page.
+            LogoutViewModel logoutViewModel = new() { LogoutId = logoutId };
+
+            return View(logoutViewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout(LogoutViewModel model)
+        {
+            string? idp = User?.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
+
+            if (idp is not null && idp != IdentityServerConstants.LocalIdentityProvider)
+            {
+                if (model.LogoutId is null)
+                {
+                    // if there's no current logout context, we need to create one
+                    // this captures necessary info from the current logged in user
+                    // before we signout and redirect away to the external IdP for signout
+                    model.LogoutId = await _interactionService.CreateLogoutContextAsync();
+                }
+
+                string url = Url.Action("Logout", new { model.LogoutId });
+
+                //登出后返回到应用所在URL上
+                if (await HttpContext.GetSchemeSupportsSignOutAsync(idp))
+                {
+                    // hack: try/catch to handle social providers that throw
+                    await HttpContext.SignOutAsync(idp, new AuthenticationProperties { RedirectUri = url });
+                }
+            }
+
+            // delete authentication cookie
+            await HttpContext.SignOutAsync();
+
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+            // set this so UI rendering sees an anonymous user
+            HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            // get context information (client name, post logout redirect URI and iframe for federated signout)
+            LogoutRequest logoutRequest = await _interactionService.GetLogoutContextAsync(model.LogoutId);
+
+            return logoutRequest?.PostLogoutRedirectUri is null ? RedirectToLocal(null) : Redirect(logoutRequest?.PostLogoutRedirectUri);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ApplicationUser? user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumber);
+
+                if (user is null)
+                {
+                    ModelState.AddModelError(string.Empty, "Phone number does not exist.");
+                    return View(model);
+                }
+
+                if (string.IsNullOrWhiteSpace(model.ConfirmedCode) || await _distributedCache.GetStringAsync(model.PhoneNumber) != model.ConfirmedCode)
+                {
+                    ModelState.AddModelError(nameof(model.ConfirmedCode), "Invalid confirmed code.");
+                    return View(model);
+                }
+
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                var identityResult = await _userManager.ResetPasswordAsync(user, code, model.Password);
+
+                if (identityResult.Succeeded)
+                {
+                    return RedirectToLocal(null);
+                }
+
+                identityResult.Errors.ToList().ForEach(e => ModelState.AddModelError(string.Empty, e.Description));
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
         //Identity错误转换为模型错误信息
         private void AddErrors(IdentityResult result)
         {
