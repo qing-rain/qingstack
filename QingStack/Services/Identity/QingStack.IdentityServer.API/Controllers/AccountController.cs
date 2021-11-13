@@ -11,11 +11,14 @@ using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using QingStack.IdentityServer.API.Aggregates;
 using QingStack.IdentityServer.API.EntityFrameworks;
 using QingStack.IdentityServer.API.Models.AccountViewModels;
+using QingStack.IdentityServer.API.Services;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,7 +33,9 @@ namespace QingStack.IdentityServer.API.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly IIdentityServerInteractionService _interactionService;
         private readonly IStringLocalizerFactory _localizerFactory;
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory loggerFactory, IIdentityServerInteractionService interactionService, ApplicationDbContext dbContext, IStringLocalizerFactory localizerFactory)
+        private readonly IDistributedCache _distributedCache;
+        private readonly ISmsSender _smsSender;
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerFactory loggerFactory, IIdentityServerInteractionService interactionService, ApplicationDbContext dbContext, IStringLocalizerFactory localizerFactory, IDistributedCache distributedCache, ISmsSender smsSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -38,6 +43,8 @@ namespace QingStack.IdentityServer.API.Controllers
             _interactionService = interactionService;
             _dbContext = dbContext;
             _localizerFactory = localizerFactory;
+            _distributedCache = distributedCache;
+            _smsSender = smsSender;
         }
         /// <summary>
         /// 登录界面
@@ -136,7 +143,137 @@ namespace QingStack.IdentityServer.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SendCode([System.ComponentModel.DataAnnotations.Phone] string phoneNumber)
         {
-            return await Task.FromResult(new OkResult());
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            // Generate the token and send it
+            //分布式缓存存储验证码
+            string code = _distributedCache.GetString(phoneNumber);
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                Random random = new((int)DateTime.Now.Ticks);
+                code = random.Next(100000, 999999).ToString();
+            }
+
+            await _distributedCache.SetStringAsync(phoneNumber, code, new DistributedCacheEntryOptions
+            {
+                //设置缓存有效期
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            });
+
+            await _smsSender.SendSmsAsync(phoneNumber, code);
+
+            return Ok();
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Register(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        //防伪验证
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model, string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            if (ModelState.IsValid)
+            {
+                //校验数据库是否存在
+                if (_dbContext.Users.Any(u => u.UserName == model.UserName || u.PhoneNumber == model.PhoneNumber))
+                {
+                    ModelState.AddModelError(string.Empty, "User name or phone number is already in use.");
+                    return View(model);
+                }
+                //校验验证码
+                if (string.IsNullOrWhiteSpace(model.ConfirmedCode) || await _distributedCache.GetStringAsync(model.PhoneNumber) != model.ConfirmedCode)
+                {
+                    ModelState.AddModelError(nameof(model.ConfirmedCode), "Invalid confirmed code.");
+                    return View(model);
+                }
+                //创建用户
+                var user = new ApplicationUser { UserName = model.UserName, PhoneNumber = model.PhoneNumber };
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                //生成token
+                var token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
+                await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber, token);
+
+                // Get the information about the user from the external login provider
+                var info = await _signInManager.GetExternalLoginInfoAsync();
+
+                if (result.Succeeded)
+                {
+                    //自动登录
+                    result = await _userManager.AddLoginAsync(user, info);
+                    if (result.Succeeded)
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        _logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
+
+                        // Update any authentication tokens as well
+                        await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
+                        return RedirectToLocal(returnUrl);
+                    }
+                }
+
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+        //Identity错误转换为模型错误信息
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        }
+
+        /// <summary>
+        /// AJAX远程验证手机号
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        /// <returns></returns>
+        [AcceptVerbs("GET", "POST"), AllowAnonymous]
+        public IActionResult VerifyPhoneNumber(string phoneNumber)
+        {
+            var _localizer = _localizerFactory.Create(typeof(RegisterViewModel));
+
+            if (_dbContext.Users.Any(u => u.PhoneNumber == phoneNumber))
+            {
+                return Json(_localizer["Phone number is already in use."].Value);
+            }
+
+            return Json(true);
+        }
+        /// <summary>
+        /// AJAX远程验证用户名
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        [AcceptVerbs("GET", "POST"), AllowAnonymous]
+        public IActionResult VerifyUserName(string userName)
+        {
+            var _localizer = _localizerFactory.Create(typeof(RegisterViewModel));
+
+            if (_dbContext.Users.Any(u => u.UserName == userName))
+            {
+                return Json(_localizer["User name is already in use."].Value);
+            }
+
+            return Json(true);
         }
     }
 }

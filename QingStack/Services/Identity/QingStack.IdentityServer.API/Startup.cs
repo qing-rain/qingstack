@@ -11,6 +11,9 @@
 
     修改标识：QingRain - 20211113
     修改描述：配置资源文件、启用视图本地化、数据注解本地化
+
+    修改标识：QingRain - 20211113
+    修改描述：注入短信功能、读取阿里巴巴配置信息、阿里云认证处理器、增加阿里云http客户端容器 消息处理中间件、发送邮件、分布式缓存
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +25,7 @@ using Microsoft.Extensions.Hosting;
 using QingStack.IdentityServer.API.Aggregates;
 using QingStack.IdentityServer.API.Constants;
 using QingStack.IdentityServer.API.EntityFrameworks;
+using QingStack.IdentityServer.API.Infrastructure.Aliyun;
 using QingStack.IdentityServer.API.Services;
 using System;
 using System.Linq;
@@ -45,6 +49,8 @@ namespace QingStack.IdentityServer.API
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             //启用视图本地化、数据注解本地化
             services.AddControllersWithViews(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true).AddViewLocalization().AddDataAnnotationsLocalization();
+            //注入分布式缓存
+            services.AddDistributedMemoryCache();
             services.AddControllersWithViews();
 
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
@@ -91,7 +97,19 @@ namespace QingStack.IdentityServer.API
                       sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                   });
               });
-            services.AddRazorPages();
+
+            //读取阿里云配置
+            services.Configure<AlibabaCloudOptions>(Configuration.GetSection("AlibabaCloud"));
+
+            //注入阿里云认证处理器
+            services.AddTransient<AliyunAuthHandler>();
+
+            //增加http客户端容器 消息处理中间件
+            services.AddHttpClient("aliyun").AddHttpMessageHandler<AliyunAuthHandler>();
+
+
+            //注入发送邮件、短信功能
+            services.AddTransient<IEmailSender, AuthMessageSender>().AddTransient<ISmsSender, AuthMessageSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
