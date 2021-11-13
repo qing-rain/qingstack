@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
+using QingStack.DeviceCenter.Application.PermissionProviders;
 using QingStack.DeviceCenter.Application.Services.Generics;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 
         // GET: api/<ProjectsController>
         [HttpGet]
+        [Authorize(ProjectPermissions.Projects.Default)]
         public async Task<PagedResponseModel<ProjectGetResponseModel>> Get([FromQuery] PagedRequestModel model)
         {
             return await _crudService.GetListAsync(model);
@@ -38,6 +40,7 @@ namespace QingStack.DeviceCenter.API.Controllers
         // GET api/<ProjectsController>/5
         [HttpGet("{id}")]
         [AllowAnonymous]
+        //[Authorize(ProjectPermissions.Projects.Default)]
         public async Task<ProjectGetResponseModel> Get(int id)
         {
             return await _crudService.GetAsync(id);
@@ -45,6 +48,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 
         // POST api/<ProjectsController>
         [HttpPost]
+        [Authorize(ProjectPermissions.Projects.Create)]
         public async Task<ProjectGetResponseModel> Post([FromBody] ProjectCreateOrUpdateRequestModel value)
         {
             return await _crudService.CreateAsync(value);
@@ -52,6 +56,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 
         // PUT api/<ProjectsController>/5
         [HttpPut("{id}")]
+        [Authorize(ProjectPermissions.Projects.Edit)]
         public async Task<ProjectGetResponseModel> Put(int id, [FromBody] ProjectCreateOrUpdateRequestModel value)
         {
             value.Id = id;
@@ -60,6 +65,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 
         // DELETE api/<ProjectsController>/5
         [HttpDelete("{id}")]
+        [Authorize(ProjectPermissions.Projects.Delete)]
         public async Task Delete(int id)
         {
             await _crudService.DeleteAsync(id);
