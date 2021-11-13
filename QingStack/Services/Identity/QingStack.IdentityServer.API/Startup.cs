@@ -20,6 +20,9 @@
 
     修改标识：QingRain - 20211113
     修改描述：注入允许跨域请求地址
+
+    修改标识：QingRain - 20211114
+    修改描述：注入自定义声明工厂、注入Identity个性化服务
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +37,7 @@ using QingStack.IdentityServer.API.Certificates;
 using QingStack.IdentityServer.API.Constants;
 using QingStack.IdentityServer.API.EntityFrameworks;
 using QingStack.IdentityServer.API.Infrastructure.Aliyun;
+using QingStack.IdentityServer.API.Infrastructure.Tenants;
 using QingStack.IdentityServer.API.Services;
 using System;
 using System.Linq;
@@ -80,7 +84,9 @@ namespace QingStack.IdentityServer.API
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 3;
                 options.Password.RequireUppercase = false;
-            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders()
+            //注入自定义声明工厂
+            .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>();
 
             //注入IdentityServer
             services.AddIdentityServer().AddAspNetIdentity<ApplicationUser>()
@@ -105,7 +111,9 @@ namespace QingStack.IdentityServer.API
                       sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                       sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                   });
-              });
+              })
+              //注入Identity个性化服务
+              .AddProfileService<IdentityProfileService>();
 
             //读取阿里云配置
             services.Configure<AlibabaCloudOptions>(Configuration.GetSection("AlibabaCloud"));

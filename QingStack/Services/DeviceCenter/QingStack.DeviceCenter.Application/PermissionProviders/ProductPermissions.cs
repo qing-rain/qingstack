@@ -8,11 +8,6 @@
     创建标识：QingRain - 20211113
 
  ----------------------------------------------------------------*/
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Application.PermissionProviders
 {

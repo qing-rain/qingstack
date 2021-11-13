@@ -7,6 +7,8 @@
 
     创建标识：QingRain - 20211113
 
+    修改标识：QingRain - 20211114
+    修改描述：增加租户关联
  ----------------------------------------------------------------*/
 using IdentityModel;
 using IdentityServer4.EntityFramework.DbContexts;
@@ -17,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using QingStack.IdentityServer.API.Aggregates;
 using QingStack.IdentityServer.API.EntityFrameworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -28,8 +31,11 @@ namespace QingStack.IdentityServer.API.Services
     {
         public static async Task SeedAsync(IApplicationBuilder app)
         {
+            //清空数据
             await ClearClientAndUserDatas(app);
+            //生成客户端演示数据
             await SeedClientDatasAsync(app);
+            //生成用户演示数据
             await SeedUserDatasAsync(app);
         }
 
@@ -51,6 +57,7 @@ namespace QingStack.IdentityServer.API.Services
         {
             using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
+            //代码迁移
             var persistedGrantDbContext = serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
             await persistedGrantDbContext.Database.MigrateAsync();
 
@@ -104,13 +111,13 @@ namespace QingStack.IdentityServer.API.Services
             var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            foreach ((int UserId, string UserName, string Password, string PhoneNumber, string Email, IEnumerable<Claim> Claims) in SampleDatas.Users())
+            foreach ((int UserId, string UserName, string Password, string PhoneNumber, string Email, Guid? TenantId, IEnumerable<Claim> Claims) in SampleDatas.Users())
             {
                 ApplicationUser createdUser = await userManager.FindByNameAsync(UserName);
 
                 if (createdUser is null)
                 {
-                    createdUser = new ApplicationUser { UserName = UserName, PhoneNumber = PhoneNumber, Email = Email };
+                    createdUser = new ApplicationUser { UserName = UserName, PhoneNumber = PhoneNumber, Email = Email, TenantId = TenantId };
                     IdentityResult result = await userManager.CreateAsync(createdUser, Password);
 
                     var userRoleClaims = Claims.Where(t => t.Type == JwtClaimTypes.Role || t.Type == ClaimTypes.Role);
