@@ -12,8 +12,10 @@
 
     修改标识: QingRain - 20211110
     修改描述：1、增加MediatR注入
+
+    修改标识: QingRain - 20211114
+    修改描述：使用保存变更拦截器横切关注点
  ----------------------------------------------------------------*/
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -21,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate;
 using QingStack.DeviceCenter.Domain.Entities;
 using QingStack.DeviceCenter.Domain.UnitOfWork;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,51 +31,17 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
 {
     public class DeviceCenterDbContext : DbContext, IUnitOfWork
     {
-        private readonly IMediator _mediator;
-        public DeviceCenterDbContext(DbContextOptions<DeviceCenterDbContext> options) : base(options) => _mediator = this.GetInfrastructure().GetService<IMediator>() ?? new NullMediator();
+        public DeviceCenterDbContext(DbContextOptions<DeviceCenterDbContext> options) : base(options) { }
         /// <summary>
         /// 隐式实现
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         async Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => await base.SaveChangesAsync(cancellationToken);
-
-        public async override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            //执行删除且支持软删除
-            var deletedEntries = ChangeTracker.Entries().Where(entry => entry.State == EntityState.Deleted && entry.Entity is ISoftDelete);
-
-            //?不为空遍历
-            deletedEntries?.ToList().ForEach(entityEntry =>
-            {
-                //加在最新数据
-                entityEntry.Reload();
-                //更新为修改状态
-                entityEntry.State = EntityState.Modified;
-                ((ISoftDelete)entityEntry.Entity).IsDeleted = true;
-            });
-            //触发领域事件
-            await DispatchDomainEventsAsync(cancellationToken);
-
-            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
         /// <summary>
-        /// 触发领域事件
+        /// DbContext池模式只调用一次
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken = default)
-        {
-            //继承BaseEntity 同时实现了IDomainEvents
-            var domainEntities = ChangeTracker.Entries<BaseEntity>().OfType<IDomainEvents>();
-            var domainEvents = domainEntities.SelectMany(x => x.DomainEvents).ToList();
-            domainEntities.ToList().ForEach(entity => entity.ClearDomainEvents());
-
-            foreach (var domainEvent in domainEvents)
-            {
-                await _mediator.Publish(domainEvent, cancellationToken);
-            }
-        }
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ///扫描当前执行程序集所有配置
@@ -86,11 +53,8 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
                 if (entityType.ClrType.IsAssignableTo(typeof(IMultiTenant)))
                 {
                     //当前上下文服务
-                    ICurrentTenant? currentTenant = this.GetInfrastructure().GetService<ICurrentTenant>();
-                    if (currentTenant?.Id is not null)
-                    {
-                        modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e => e.TenantId == currentTenant.Id);
-                    }
+                    ICurrentTenant currentTenant = this.GetService<ICurrentTenant>();
+                    modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e => e.TenantId == currentTenant.Id);
                 }
                 //实现软删除接口
                 if (entityType.ClrType.IsAssignableTo(typeof(ISoftDelete)))

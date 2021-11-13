@@ -17,19 +17,25 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate
     public class CurrentTenant : ICurrentTenant
     {
         private readonly ICurrentTenantAccessor _currentTenantAccessor;
+        /// <summary>
+        /// 租户ID是否有值
+        /// </summary>
+        public virtual bool IsAvailable => Id.HasValue;
 
         public CurrentTenant(ICurrentTenantAccessor currentTenantAccessor) => _currentTenantAccessor = currentTenantAccessor;
 
-        public virtual Guid? Id => _currentTenantAccessor.TenantId;
+        public virtual Guid? Id => _currentTenantAccessor.Current?.TenantId;
 
-        public IDisposable Change(Guid? id)
+        public string? Name => _currentTenantAccessor.Current?.Name;
+
+        public IDisposable Change(Guid? id, string? name = null)
         {
-            var parentScope = _currentTenantAccessor.TenantId;
-            _currentTenantAccessor.TenantId = id;
+            var parentScope = _currentTenantAccessor.Current;
+            _currentTenantAccessor.Current = new TenantInfo(id, name);
 
             return new DisposeAction(() =>
             {
-                _currentTenantAccessor.TenantId = parentScope;
+                _currentTenantAccessor.Current = parentScope;
             });
         }
         //类中类

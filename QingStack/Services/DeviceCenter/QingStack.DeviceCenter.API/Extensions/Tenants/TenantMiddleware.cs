@@ -7,6 +7,9 @@
 
     创建标识：QingRain - 20211110
 
+    修改标识：QingRain - 20211114
+    修改描述：
+
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Http;
 using QingStack.DeviceCenter.API.Constants;
@@ -25,42 +28,43 @@ namespace QingStack.DeviceCenter.API.Extensions.Tenants
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            string? tenantIdString = null;
-
-            if (context.Request.Headers.TryGetValue(TenantConstants.TenantId, out var headerTenantIds))
+            string? tenantIdString = ResolveTenantId(context);
+            if (Guid.TryParse(tenantIdString, out var parsedTenantId))
             {
-                tenantIdString = headerTenantIds.First();
+                //切换租户
+                using (_currentTenant.Change(parsedTenantId))
+                {
+                    await next(context);
+                }
             }
-
-            if (context.Request.Query.TryGetValue(TenantConstants.TenantId, out var queryTenantIds))
-            {
-                tenantIdString = queryTenantIds.First();
-            }
-
-            if (context.Request.Cookies.TryGetValue(TenantConstants.TenantId, out var cookieTenantId))
-            {
-                tenantIdString = cookieTenantId;
-            }
-
-            if (context.Request.RouteValues.TryGetValue(TenantConstants.TenantId, out var routeTenantId))
-            {
-                tenantIdString = routeTenantId?.ToString();
-            }
-
-            tenantIdString ??= context.User.FindFirst(TenantConstants.TenantId)?.Value;
-
-            Guid? currentTenantId = null;
-
-            if (!string.IsNullOrWhiteSpace(tenantIdString))
-            {
-                currentTenantId = Guid.Parse(tenantIdString);
-            }
-
-            using (_currentTenant.Change(currentTenantId))
+            else
             {
                 await next(context);
             }
         }
+        protected virtual string? ResolveTenantId(HttpContext httpContext)
+        {
+            if (httpContext.Request.Headers.TryGetValue(TenantClaimTypes.TenantId, out var headerValues))
+            {
+                return headerValues.First();
+            }
 
+            if (httpContext.Request.Query.TryGetValue(TenantClaimTypes.TenantId, out var queryValues))
+            {
+                return queryValues.First();
+            }
+
+            if (httpContext.Request.Cookies.TryGetValue(TenantClaimTypes.TenantId, out var cookieValue))
+            {
+                return cookieValue;
+            }
+
+            if (httpContext.Request.RouteValues.TryGetValue(TenantClaimTypes.TenantId, out var routeValue))
+            {
+                return routeValue?.ToString();
+            }
+
+            return httpContext.User.FindFirst(TenantClaimTypes.TenantId)?.Value;
+        }
     }
 }

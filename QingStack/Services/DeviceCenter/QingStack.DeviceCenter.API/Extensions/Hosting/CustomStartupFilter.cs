@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.Domain.Repositories;
 using System;
 using System.ComponentModel;
@@ -37,8 +36,7 @@ namespace QingStack.DeviceCenter.API.Extensions.Hosting
                 //拦截请求解析语言版本
                 app.UseRequestLocalization(localizationOptions);
 
-                //注入多租户中间件拦截
-                app.UseTenantMiddleware();
+
 
                 //解析验证器模型名称
                 IStringLocalizerFactory? localizerFactory = app.ApplicationServices.GetService<IStringLocalizerFactory>();

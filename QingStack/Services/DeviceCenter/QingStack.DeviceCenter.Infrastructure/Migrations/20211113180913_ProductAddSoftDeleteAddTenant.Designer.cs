@@ -9,8 +9,8 @@ using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
 namespace QingStack.DeviceCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(DeviceCenterDbContext))]
-    [Migration("20211111030718_CreateTenant")]
-    partial class CreateTenant
+    [Migration("20211113180913_ProductAddSoftDeleteAddTenant")]
+    partial class ProductAddSoftDeleteAddTenant
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -18,6 +18,35 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
                 .HasAnnotation("ProductVersion", "5.0.10");
+
+            modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.PermissionAggregate.PermissionGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("ProviderName")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name", "ProviderName", "ProviderKey");
+
+                    b.ToTable("PermissionGrants");
+                });
 
             modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate.Device", b =>
                 {
@@ -79,6 +108,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -90,6 +122,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.Property<string>("Remark")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 

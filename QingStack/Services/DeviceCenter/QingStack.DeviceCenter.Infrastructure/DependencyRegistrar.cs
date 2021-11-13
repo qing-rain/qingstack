@@ -9,7 +9,11 @@
 
     修改标识：QingRain - 20211111
     修改描述：注入权限授予自定义仓储
+
+    修改标识：QingRain - 20211114
+    修改描述：注入自定义保存拦截器
  ----------------------------------------------------------------*/
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +46,10 @@ namespace QingStack.DeviceCenter.Infrastructure
                 //optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
                 //optionsBuilder.EnableSensitiveDataLogging();
                 //optionsBuilder.EnableDetailedErrors();
+
+                IMediator mediator = serviceProvider.GetService<IMediator>() ?? new NullMediator();
+                optionsBuilder.AddInterceptors(new CustomSaveChangesInterceptor(mediator));
+
                 optionsBuilder.UseInternalServiceProvider(serviceProvider);
             });
 
@@ -52,6 +60,8 @@ namespace QingStack.DeviceCenter.Infrastructure
                     sqlOptions.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
                     sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                 });
+                IMediator mediator = serviceProvider.GetService<IMediator>() ?? new NullMediator();
+                optionsBuilder.AddInterceptors(new CustomSaveChangesInterceptor(mediator));
 
                 optionsBuilder.UseInternalServiceProvider(serviceProvider);
             });

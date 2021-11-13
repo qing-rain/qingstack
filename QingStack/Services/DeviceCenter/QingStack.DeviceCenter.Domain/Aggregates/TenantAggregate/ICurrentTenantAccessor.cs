@@ -7,14 +7,14 @@
 
     创建标识：QingRain - 20211110
 
-
+    修改标识：QingRain - 20211114
+    修改描述：重构接口 返回租户信息
  ----------------------------------------------------------------*/
-using System;
 
 namespace QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate
 {
     public interface ICurrentTenantAccessor
     {
-        Guid? TenantId { get; set; }
+        TenantInfo? Current { get; set; }
     }
 }

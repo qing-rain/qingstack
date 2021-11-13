@@ -106,6 +106,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -117,6 +120,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.Property<string>("Remark")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 

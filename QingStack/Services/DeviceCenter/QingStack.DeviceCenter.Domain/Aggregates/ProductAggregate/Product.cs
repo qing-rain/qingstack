@@ -7,6 +7,8 @@
 
     创建标识：QingRain - 20211108
 
+    修改标识：QingRain - 20211114
+    修改描述：实现软删除、多租户接口
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Entities;
 using System;
@@ -14,7 +16,7 @@ using System.Collections.Generic;
 
 namespace QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate
 {
-    public class Product : BaseAggregateRoot<Guid>
+    public class Product : BaseAggregateRoot<Guid>, ISoftDelete, IMultiTenant
     {
         /// <summary>
         /// 产品名称
@@ -35,5 +37,14 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate
         /// 描述信息
         /// </summary>
         public string? Remark { get; set; }
+        /// <summary>
+        /// 删除标记
+        /// </summary>
+        public bool IsDeleted { get; set; }
+
+        /// <summary>
+        /// 租户标识
+        /// </summary>
+        public Guid? TenantId { get; set; }
     }
 }

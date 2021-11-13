@@ -7,7 +7,8 @@
 
     创建标识：QingRain - 20211110
 
-
+    修改标识：QingRain - 20211114
+    修改描述：重构接口 返回当前租户信息
  ----------------------------------------------------------------*/
 using System;
 
@@ -16,7 +17,14 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate
     public interface ICurrentTenant
     {
 
+        /// <summary>
+        /// 当前租户是否可用
+        /// </summary>
+        bool IsAvailable { get; }
+
         Guid? Id { get; }
+
+        string? Name { get; }
 
         /// <summary>
         /// 切换租户
@@ -24,6 +32,6 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        IDisposable Change(Guid? id);
+        IDisposable Change(Guid? id, string? name = null);
     }
 }

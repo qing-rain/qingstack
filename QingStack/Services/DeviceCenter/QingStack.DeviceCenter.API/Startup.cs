@@ -23,6 +23,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.API.Infrastructure.Swagger;
 using System;
 using System.Collections.Generic;
@@ -102,6 +103,9 @@ namespace QingStack.DeviceCenter.API
 
             //认证、授权
             app.UseAuthentication().UseAuthorization();
+
+            //注入多租户中间件拦截
+            app.UseTenantMiddleware();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
