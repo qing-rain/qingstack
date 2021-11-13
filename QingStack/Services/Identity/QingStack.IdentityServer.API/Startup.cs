@@ -9,7 +9,8 @@
     修改标识：QingRain - 20211112
     修改描述：注入认证上下文、IdentityServer框架、Identity、演示数据生成
 
-
+    修改标识：QingRain - 20211113
+    修改描述：配置资源文件、启用视图本地化、数据注解本地化
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,7 @@ using QingStack.IdentityServer.API.Constants;
 using QingStack.IdentityServer.API.EntityFrameworks;
 using QingStack.IdentityServer.API.Services;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace QingStack.IdentityServer.API
@@ -39,6 +41,12 @@ namespace QingStack.IdentityServer.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //配置资源文件
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            //启用视图本地化、数据注解本地化
+            services.AddControllersWithViews(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true).AddViewLocalization().AddDataAnnotationsLocalization();
+            services.AddControllersWithViews();
+
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
             //注入认证上下文
             services.AddDbContext<ApplicationDbContext>((serviceProvider, optionsBuilder) =>
@@ -89,6 +97,15 @@ namespace QingStack.IdentityServer.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //注入多语言切换
+            string[] supportedCultures = new[] { "zh-CN", "en-US" };
+            RequestLocalizationOptions localizationOptions = new()
+            {
+                ApplyCurrentCultureToResponseHeaders = false
+            };
+            localizationOptions.SetDefaultCulture(supportedCultures.First()).AddSupportedCultures(supportedCultures).AddSupportedUICultures(supportedCultures);
+            app.UseRequestLocalization(localizationOptions);
+
             //生成演示数据
             SampleDataSeed.SeedAsync(app).Wait();
             if (env.IsDevelopment())
@@ -97,7 +114,7 @@ namespace QingStack.IdentityServer.API
             }
             else
             {
-                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -112,7 +129,9 @@ namespace QingStack.IdentityServer.API
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
