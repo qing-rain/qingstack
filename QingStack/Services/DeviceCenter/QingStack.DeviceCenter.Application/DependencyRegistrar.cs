@@ -27,12 +27,17 @@
 
     修改标识：QingRain - 20211112
     修改描述：注入权限应用服务
+
+    修改标识：QingRain - 20211114
+    修改描述：注入数据库链接创建工厂、项目查询服务
  ----------------------------------------------------------------*/
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
+using QingStack.DeviceCenter.Application.Queries.Factories;
+using QingStack.DeviceCenter.Application.Queries.Projects;
 using QingStack.DeviceCenter.Application.Services.Generics;
 using QingStack.DeviceCenter.Application.Services.Permissions;
 using QingStack.DeviceCenter.Application.Services.Products;
@@ -55,6 +60,8 @@ namespace QingStack.DeviceCenter.Application
             services.AddApplicationServices();
             //注入权限相关服务
             services.AddAuthorization();
+            //注入Query模式
+            services.AddQueries();
             //自定义验证器提示扩展
             ValidatorOptions.Global.LanguageManager = new Extensions.Validators.CustomLanguageManager();
             //注入验证器
@@ -96,6 +103,13 @@ namespace QingStack.DeviceCenter.Application
             //注入权限值提供者
             var permissionValueProviders = exportedTypes.Where(t => t.IsAssignableTo(typeof(IPermissionValueProvider)));
             permissionValueProviders.ToList().ForEach(t => services.AddTransient(typeof(IPermissionValueProvider), t));
+            return services;
+        }
+        private static IServiceCollection AddQueries(this IServiceCollection services)
+        {
+            services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+
+            services.AddTransient<IProjectQueries, ProjectQueries>();
             return services;
         }
     }

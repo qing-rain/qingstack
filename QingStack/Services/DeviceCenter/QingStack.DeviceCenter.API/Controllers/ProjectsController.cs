@@ -6,12 +6,16 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211114
+    创建描述：注入项目查询接口,调整Get查询调用方式
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
 using QingStack.DeviceCenter.Application.PermissionProviders;
+using QingStack.DeviceCenter.Application.Queries.Projects;
 using QingStack.DeviceCenter.Application.Services.Generics;
 using System.Threading.Tasks;
 
@@ -23,27 +27,27 @@ namespace QingStack.DeviceCenter.API.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> _crudService;
-
-        public ProjectsController(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> crudService)
+        private readonly IProjectQueries _projectQueries;
+        public ProjectsController(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> crudService, IProjectQueries projectQueries)
         {
             _crudService = crudService;
+            _projectQueries = projectQueries;
         }
 
         // GET: api/<ProjectsController>
         [HttpGet]
         [Authorize(ProjectPermissions.Projects.Default)]
-        public async Task<PagedResponseModel<ProjectGetResponseModel>> Get([FromQuery] PagedRequestModel model)
+        public async Task<PagedResponseModel<ProjectGetResponseModel>> Get([FromQuery] ProjectPagedRequestModel model)
         {
-            return await _crudService.GetListAsync(model);
+            return await _projectQueries.GetProjectsAsync(model);
         }
 
         // GET api/<ProjectsController>/5
         [HttpGet("{id}")]
-        [AllowAnonymous]
-        //[Authorize(ProjectPermissions.Projects.Default)]
+        [Authorize(ProjectPermissions.Projects.Default)]
         public async Task<ProjectGetResponseModel> Get(int id)
         {
-            return await _crudService.GetAsync(id);
+            return await _projectQueries.GetProjectAsync(id);
         }
 
         // POST api/<ProjectsController>
