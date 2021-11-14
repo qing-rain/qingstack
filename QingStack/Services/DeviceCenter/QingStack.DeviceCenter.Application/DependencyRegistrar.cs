@@ -30,10 +30,14 @@
 
     修改标识：QingRain - 20211114
     修改描述：注入数据库链接创建工厂、项目查询服务
+
+    修改标识：QingRain - 20211114
+    修改描述：注入Behavior 行为拦截 Handler 命令处理器、命令验证行为拦截器
  ----------------------------------------------------------------*/
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using QingStack.DeviceCenter.Application.Behaviors;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
 using QingStack.DeviceCenter.Application.Queries.Factories;
@@ -52,8 +56,8 @@ namespace QingStack.DeviceCenter.Application
     {
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
         {
-            //注入领域事件
-            services.AddDomainEvents();
+            //注入MediatR事件
+            services.AddMediatREvents();
             //注入模型映射
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             //注入应用服务
@@ -68,10 +72,13 @@ namespace QingStack.DeviceCenter.Application
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             return services;
         }
-        private static IServiceCollection AddDomainEvents(this IServiceCollection services)
+        private static IServiceCollection AddMediatREvents(this IServiceCollection services)
         {
             services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
-
+            //日志记录行为拦截器
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            //命令验证行为拦截器
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
             return services;
         }
         private static IServiceCollection AddApplicationServices(this IServiceCollection services)
