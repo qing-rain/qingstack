@@ -9,14 +9,21 @@
 
     修改标识：QingRain - 20211114
     创建描述：注入项目查询接口,调整Get查询调用方式
+
+    修改标识：QingRain - 20211114
+    创建描述：使用 MediatR 实现 Command 命令模式
  ----------------------------------------------------------------*/
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QingStack.DeviceCenter.Application.Commands.Projects;
+using QingStack.DeviceCenter.Application.Infrastructure.Command;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Projects;
 using QingStack.DeviceCenter.Application.PermissionProviders;
 using QingStack.DeviceCenter.Application.Queries.Projects;
 using QingStack.DeviceCenter.Application.Services.Generics;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.API.Controllers
@@ -28,10 +35,12 @@ namespace QingStack.DeviceCenter.API.Controllers
     {
         private readonly ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> _crudService;
         private readonly IProjectQueries _projectQueries;
-        public ProjectsController(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> crudService, IProjectQueries projectQueries)
+        private readonly IMediator _mediator;
+        public ProjectsController(ICrudApplicationService<int, ProjectGetResponseModel, PagedRequestModel, ProjectGetResponseModel, ProjectCreateOrUpdateRequestModel, ProjectCreateOrUpdateRequestModel> crudService, IProjectQueries projectQueries, IMediator mediator)
         {
             _crudService = crudService;
             _projectQueries = projectQueries;
+            _mediator = mediator;
         }
 
         // GET: api/<ProjectsController>
@@ -53,9 +62,16 @@ namespace QingStack.DeviceCenter.API.Controllers
         // POST api/<ProjectsController>
         [HttpPost]
         [Authorize(ProjectPermissions.Projects.Create)]
-        public async Task<ProjectGetResponseModel> Post([FromBody] ProjectCreateOrUpdateRequestModel value)
+        public async Task<ProjectGetResponseModel> Post([FromBody] CreateProjectCommand command, [FromHeader(Name = "X-Request-Id")] string? requestId)
         {
-            return await _crudService.CreateAsync(value);
+            //使用去重命令处理器分发子命令
+            requestId ??= Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+
+            var identifiedCommand = new IdentifiedCommand<CreateProjectCommand, ProjectGetResponseModel>(command, requestId);
+
+            ProjectGetResponseModel result = await _mediator.Send(identifiedCommand);
+
+            return result;
         }
 
         // PUT api/<ProjectsController>/5

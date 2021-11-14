@@ -6,8 +6,12 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211114
+    创建描述：增加创建项目命令模型与实体映射
  ----------------------------------------------------------------*/
 using AutoMapper;
+using QingStack.DeviceCenter.Application.Commands.Projects;
 using QingStack.DeviceCenter.Application.Models.Projects;
 using QingStack.DeviceCenter.Domain.Aggregates.ProjectAggregate;
 
@@ -19,6 +23,7 @@ namespace QingStack.DeviceCenter.Application.AutoMapper
         {
             CreateMap<Project, ProjectGetResponseModel>();
             CreateMap<ProjectCreateOrUpdateRequestModel, Project>();
+            CreateMap<CreateProjectCommand, Project>();
         }
     }
 }

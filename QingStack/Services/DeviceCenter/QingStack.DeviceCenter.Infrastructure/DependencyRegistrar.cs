@@ -15,6 +15,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：注入租户连接字符串服务、连接字符串提供者
+
+    修改标识：QingRain - 20211114
+    修改描述：注入幂等性模型管理器服务
  ----------------------------------------------------------------*/
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +29,7 @@ using QingStack.DeviceCenter.Domain.Repositories;
 using QingStack.DeviceCenter.Infrastructure.ConnectionStrings;
 using QingStack.DeviceCenter.Infrastructure.Constants;
 using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
+using QingStack.DeviceCenter.Infrastructure.Idempotency;
 using QingStack.DeviceCenter.Infrastructure.Repositories.Permissions;
 using QingStack.DeviceCenter.Infrastructure.Repositories.Products;
 using System;
@@ -88,6 +92,8 @@ namespace QingStack.DeviceCenter.Infrastructure
 
             //注入权限授予自定义仓储
             services.AddTransient<IPermissionGrantRepository, PermissionGrantRepository>();
+
+            services.AddTransient<IRequestManager, RequestManager>();
             return services;
         }
     }

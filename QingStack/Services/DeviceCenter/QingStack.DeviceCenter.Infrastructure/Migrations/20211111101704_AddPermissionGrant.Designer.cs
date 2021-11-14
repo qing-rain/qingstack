@@ -180,42 +180,6 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.ToTable("ProjectGroups");
                 });
 
-            modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.Tenant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name");
-
-                    b.ToTable("Tenants");
-                });
-
-            modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.TenantConnectionString", b =>
-                {
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("varchar(1024)");
-
-                    b.HasKey("TenantId", "Name");
-
-                    b.ToTable("TenantConnectionStrings");
-                });
 
             modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate.Device", b =>
                 {
@@ -288,14 +252,7 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.TenantConnectionString", b =>
-                {
-                    b.HasOne("QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.Tenant", null)
-                        .WithMany("ConnectionStrings")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+          
 
             modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate.Device", b =>
                 {
@@ -317,10 +274,6 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.Navigation("Children");
                 });
 
-            modelBuilder.Entity("QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate.Tenant", b =>
-                {
-                    b.Navigation("ConnectionStrings");
-                });
 #pragma warning restore 612, 618
         }
     }
