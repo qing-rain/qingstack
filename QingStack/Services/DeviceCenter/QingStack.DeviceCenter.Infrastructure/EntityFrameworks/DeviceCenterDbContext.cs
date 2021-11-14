@@ -15,6 +15,9 @@
 
     修改标识: QingRain - 20211114
     修改描述：使用保存变更拦截器横切关注点
+
+    修改标识: QingRain - 20211114
+    修改描述：多租户注入服务获取方式调整
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -53,8 +56,11 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
                 if (entityType.ClrType.IsAssignableTo(typeof(IMultiTenant)))
                 {
                     //当前上下文服务
-                    ICurrentTenant currentTenant = this.GetService<ICurrentTenant>();
-                    modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e => e.TenantId == currentTenant.Id);
+                    ICurrentTenant? currentTenant = this.GetInfrastructure().GetService<ICurrentTenant>();
+                    if (currentTenant is not null)
+                    {
+                        modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e => e.TenantId == currentTenant.Id);
+                    }
                 }
                 //实现软删除接口
                 if (entityType.ClrType.IsAssignableTo(typeof(ISoftDelete)))

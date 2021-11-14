@@ -9,6 +9,9 @@
 
     修改标识：QingRain - 20211113
     修改描述：注入JWT认证
+
+    修改标识：QingRain - 20211114
+    修改描述：自动绑定TenantStoreOptions配置
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Application;
 using QingStack.DeviceCenter.Domain;
 using QingStack.DeviceCenter.Infrastructure;
+using QingStack.DeviceCenter.Infrastructure.ConnectionStrings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 //标记HostingStartup
@@ -48,6 +52,8 @@ namespace QingStack.DeviceCenter.API.Extensions.Hosting
                     options.TokenValidationParameters.ValidateAudience = false;
                     options.TokenValidationParameters.NameClaimType = ClaimTypes.Name;
                 });
+                //自动绑定配置
+                services.Configure<TenantStoreOptions>(configuration);
             });
         }
     }

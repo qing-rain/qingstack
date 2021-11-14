@@ -9,6 +9,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：增加租户信息
+
+    修改标识：QingRain - 20211114
+    修改描述：租户切换
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate;
@@ -45,7 +48,7 @@ namespace QingStack.DeviceCenter.Domain.Services.Products
                     {
                         tenantId = Guid.Parse($"f30e402b-9de2-4b48-9ff0-c073cf499103");
                     }
-
+                    //租户切换
                     using (_currentTenant.Change(tenantId))
                     {
                         var product = new Product { Name = $"Product{i.ToString().PadLeft(2, '0')}" };

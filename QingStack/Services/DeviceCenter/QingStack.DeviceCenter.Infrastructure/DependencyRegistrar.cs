@@ -12,6 +12,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：注入自定义保存拦截器
+
+    修改标识：QingRain - 20211114
+    修改描述：注入租户连接字符串服务、连接字符串提供者
  ----------------------------------------------------------------*/
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using QingStack.DeviceCenter.Domain.Aggregates.PermissionAggregate;
 using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using QingStack.DeviceCenter.Domain.Repositories;
+using QingStack.DeviceCenter.Infrastructure.ConnectionStrings;
 using QingStack.DeviceCenter.Infrastructure.Constants;
 using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
 using QingStack.DeviceCenter.Infrastructure.Repositories.Permissions;
@@ -33,6 +37,8 @@ namespace QingStack.DeviceCenter.Infrastructure
     {
         public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services, IConfiguration configuration)
         {
+            //注入租户连接字符串服务
+            services.AddTransient<IConnectionStringProvider, TenantConnectionStringProvider>();
             services.AddEntityFrameworkMySql();
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
             //DbContext池 提高效率
@@ -50,6 +56,10 @@ namespace QingStack.DeviceCenter.Infrastructure
                 IMediator mediator = serviceProvider.GetService<IMediator>() ?? new NullMediator();
                 optionsBuilder.AddInterceptors(new CustomSaveChangesInterceptor(mediator));
 
+                //连接字符串提供者
+                var connectionStringProvider = serviceProvider.GetRequiredService<IConnectionStringProvider>();
+                optionsBuilder.AddInterceptors(new TenantDbConnectionInterceptor(connectionStringProvider));
+
                 optionsBuilder.UseInternalServiceProvider(serviceProvider);
             });
 
@@ -62,6 +72,10 @@ namespace QingStack.DeviceCenter.Infrastructure
                 });
                 IMediator mediator = serviceProvider.GetService<IMediator>() ?? new NullMediator();
                 optionsBuilder.AddInterceptors(new CustomSaveChangesInterceptor(mediator));
+
+                //连接字符串提供者
+                var connectionStringProvider = serviceProvider.GetRequiredService<IConnectionStringProvider>();
+                optionsBuilder.AddInterceptors(new TenantDbConnectionInterceptor(connectionStringProvider));
 
                 optionsBuilder.UseInternalServiceProvider(serviceProvider);
             });
