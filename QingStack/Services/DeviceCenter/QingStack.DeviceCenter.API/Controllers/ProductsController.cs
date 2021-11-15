@@ -51,15 +51,15 @@ namespace QingStack.DeviceCenter.API.Controllers
             return await _productService.CreateAsync(value);
         }
         [HttpPut("{id}")]
-        [Authorize(ProductPermissions.Products.Edit)]
-        public async Task<ProductGetResponseModel> Put(Guid id, [FromBody] ProductCreateOrUpdateRequestModel value)
+        //[Authorize(ProductPermissions.Products.Edit)]
+        public async Task<ProductGetResponseModel> PutProduct(Guid id, [FromBody] ProductCreateOrUpdateRequestModel value)
         {
             value.Id = id;
-            return await _productService.UpdateAsync(value);
+            return await _productService.UpdateAsync(id, value);
         }
         [HttpDelete("{id}")]
         [Authorize(ProductPermissions.Products.Delete)]
-        public async Task Delete(Guid id)
+        public async Task DeleteProduct(Guid id)
         {
             await _productService.DeleteAsync(id);
         }

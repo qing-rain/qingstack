@@ -1,4 +1,4 @@
-import { getProduct, getProducts, postProduct } from '@/services/deviceCenter/Products';
+import { getProduct, getProducts, postProduct, putProduct } from '@/services/deviceCenter/Products';
 import { DownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ProDescriptionsItemProps } from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
@@ -17,10 +17,12 @@ import { Button, Drawer, message, Tooltip } from 'antd';
 import moment from 'moment';
 import { useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import UpdateForm from './components/UpdateForm';
 
 export default () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<API.ProductGetResponseModel>();
+  const [updateVisible, setUpdateVisible] = useState<boolean>(false);
   const tableActionRef = useRef<ActionType>();
   const createFormRef = useRef<FormInstance>();
   const columns: ProColumns<API.ProductGetResponseModel>[] = [
@@ -72,6 +74,22 @@ export default () => {
       },
       sorter: { multiple: 3 },
       defaultSortOrder: 'descend',
+    },
+    {
+      title: '操作',
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (dom: any, entity: API.ProductGetResponseModel) => [
+        <a
+          key={entity.id}
+          onClick={() => {
+            setUpdateVisible(true);
+            setCurrentRow(entity);
+          }}
+        >
+          编辑
+        </a>,
+      ],
     },
   ];
 
@@ -181,6 +199,25 @@ export default () => {
           columns={columns as ProDescriptionsItemProps<API.ProductGetResponseModel>[]}
         />
       </Drawer>
+      {currentRow?.id ? (
+        <UpdateForm
+          id={currentRow.id}
+          visible={updateVisible}
+          onCancel={() => {
+            setUpdateVisible(false);
+            setCurrentRow(undefined);
+          }}
+          onSubmit={async (formData: API.ProductCreateOrUpdateRequestModel) => {
+            if (formData.id) {
+              formData.creationTime = moment(formData.creationTime).toISOString();
+              await putProduct({ id: formData.id }, formData);
+              message.success('保存成功');
+              tableActionRef.current?.reload();
+              setUpdateVisible(false);
+            }
+          }}
+        />
+      ) : null}
     </PageContainer>
   );
 };

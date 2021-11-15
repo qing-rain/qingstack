@@ -6,6 +6,9 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211116
+    修改描述：更新方法增加id参数
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Application.Models.Generics;
 using System.Threading.Tasks;
@@ -18,7 +21,7 @@ namespace QingStack.DeviceCenter.Application.Services.Generics
 
         Task DeleteAsync(TKey id);
 
-        Task<TGetResponseModel> UpdateAsync(TUpdateRequestModel requestModel);
+        Task<TGetResponseModel> UpdateAsync(TKey id, TUpdateRequestModel requestModel);
 
         Task<TGetResponseModel> GetAsync(TKey id);
 

@@ -83,11 +83,11 @@ declare namespace API {
     id: string;
   };
 
-  type putParams = {
+  type putProductParams = {
     id: string;
   };
 
-  type deleteParams = {
+  type deleteProductParams = {
     id: string;
   };
 

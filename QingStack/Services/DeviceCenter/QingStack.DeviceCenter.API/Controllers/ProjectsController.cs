@@ -80,7 +80,7 @@ namespace QingStack.DeviceCenter.API.Controllers
         public async Task<ProjectGetResponseModel> Put(int id, [FromBody] ProjectCreateOrUpdateRequestModel value)
         {
             value.Id = id;
-            return await _crudService.UpdateAsync(value);
+            return await _crudService.UpdateAsync(id, value);
         }
 
         // DELETE api/<ProjectsController>/5

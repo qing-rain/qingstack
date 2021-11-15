@@ -56,9 +56,9 @@ export async function getProduct(
 }
 
 /** 此处后端没有提供注释 PUT /api/Products/${param0} */
-export async function put(
+export async function putProduct(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.putParams & {
+  params: API.putProductParams & {
     // path
     id: string;
   },
@@ -78,9 +78,9 @@ export async function put(
 }
 
 /** 此处后端没有提供注释 DELETE /api/Products/${param0} */
-export async function deleteUsingDELETE(
+export async function deleteProduct(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.deleteUsingDELETEParams & {
+  params: API.deleteProductParams & {
     // path
     id: string;
   },

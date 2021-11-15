@@ -9,6 +9,9 @@
 
     修改标识：QingRain - 20211115
     修改描述：调整排序方法
+
+    修改标识：QingRain - 20211116
+    修改描述：调整更新方法，防止更新未传字段被置空
  ----------------------------------------------------------------*/
 using AutoMapper;
 using QingStack.DeviceCenter.Application.Models.Generics;
@@ -146,9 +149,11 @@ namespace QingStack.DeviceCenter.Application.Services.Generics
             return query;
         }
 
-        public async Task<TGetResponseModel> UpdateAsync(TUpdateRequestModel requestModel)
+        public async Task<TGetResponseModel> UpdateAsync(TKey id, TUpdateRequestModel requestModel)
         {
-            TEntity entity = _mapper.Map<TEntity>(requestModel);
+            TEntity entity = await GetEntityByIdAsync(id);
+            //可通过设置Map字段方式指定属性映射实体
+            _mapper.Map(requestModel, entity);
             await Repository.UpdateAsync(entity, true);
             return _mapper.Map<TGetResponseModel>(entity);
         }
