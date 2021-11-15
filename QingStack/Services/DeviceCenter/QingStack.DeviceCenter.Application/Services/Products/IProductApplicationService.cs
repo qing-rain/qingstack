@@ -6,8 +6,10 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211115
+    修改描述：调整分页请求模型ProductPagedRequestModel
  ----------------------------------------------------------------*/
-using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Products;
 using QingStack.DeviceCenter.Application.Services.Generics;
 using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
@@ -16,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Application.Services.Products
 {
-    public interface IProductApplicationService : ICrudApplicationService<Guid, ProductGetResponseModel, PagedRequestModel, ProductGetResponseModel, ProductCreateOrUpdateRequestModel, ProductCreateOrUpdateRequestModel>
+    public interface IProductApplicationService : ICrudApplicationService<Guid, ProductGetResponseModel, ProductPagedRequestModel, ProductGetResponseModel, ProductCreateOrUpdateRequestModel, ProductCreateOrUpdateRequestModel>
     {
         Task<Product> GetByName(string productName);
     }

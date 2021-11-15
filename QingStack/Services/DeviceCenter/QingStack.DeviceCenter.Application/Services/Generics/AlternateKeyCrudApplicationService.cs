@@ -6,11 +6,15 @@
 
 
     创建标识：QingRain - 20211111
+
+    修改标识：QingRain - 20211115
+    修改描述：调整排序方法
  ----------------------------------------------------------------*/
 using AutoMapper;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Domain.Entities;
 using QingStack.DeviceCenter.Domain.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,12 +97,37 @@ namespace QingStack.DeviceCenter.Application.Services.Generics
         /// <returns></returns>
         protected virtual IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetListRequestModel requestModel)
         {
-            if (requestModel is PagedRequestModel model && !string.IsNullOrWhiteSpace(model.Sorting))
-            {
-                return query.OrderBy(model.Sorting);
-            }
+            var pagedRequestModel = requestModel as PagedRequestModel;
 
-            return query;
+            if (pagedRequestModel is not null && pagedRequestModel.Sorter is not null && pagedRequestModel.Sorter.Any())
+            {
+                //获取泛型的实体的所有参数
+                var properties = query.GetType().GetGenericArguments().First().GetProperties();
+                IOrderedQueryable<TEntity>? orderedQueryable = null;
+                foreach (SortingDescriptor sortingDescriptor in pagedRequestModel.Sorter)
+                {
+                    string? propertyName = properties.SingleOrDefault(p => string.Equals(p.Name, sortingDescriptor.PropertyName, StringComparison.OrdinalIgnoreCase))?.Name;
+
+                    if (propertyName is null)
+                    {
+                        throw new KeyNotFoundException(sortingDescriptor.PropertyName);
+                    }
+
+                    if (sortingDescriptor.SortDirection == SortingOrder.Ascending)
+                    {
+                        orderedQueryable = orderedQueryable is null ? query.OrderBy(propertyName) : orderedQueryable.ThenBy(propertyName);
+                    }
+                    else if (sortingDescriptor.SortDirection == SortingOrder.Descending)
+                    {
+                        orderedQueryable = orderedQueryable is null ? query.OrderByDescending(propertyName) : orderedQueryable.ThenByDescending(propertyName);
+                    }
+                }
+
+                return orderedQueryable ?? query;
+            }
+            string firstPropertyName = typeof(TEntity).GetProperties().First().Name;
+
+            return query.OrderByDescending(firstPropertyName);
         }
         /// <summary>
         /// 默认分页

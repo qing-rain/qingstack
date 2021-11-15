@@ -19,6 +19,9 @@
     修改标识：QingRain - 20211115
     修改描述：调整Swagger支持不可空引用类型、注入参数转换过滤器
 
+    修改标识：QingRain - 20211115
+    修改描述：Swagger配置排序解释器输入方式
+
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +31,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.API.Infrastructure.Swagger;
+using QingStack.DeviceCenter.Application.Services.Generics;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -54,7 +58,7 @@ namespace QingStack.DeviceCenter.API
                 //支持不可空引用类型
                 c.SupportNonNullableReferenceTypes();
                 c.UseAllOfToExtendReferenceSchemas();
-                
+
                 //注入操作过滤器
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 //注入参数转换过滤器
@@ -81,6 +85,9 @@ namespace QingStack.DeviceCenter.API
                         }
                     }
                 });
+
+                //配置排序解释器输入方式
+                c.MapType<IEnumerable<SortingDescriptor>>(() => new OpenApiSchema { Type = "string", Format = "json" });
             });
         }
 

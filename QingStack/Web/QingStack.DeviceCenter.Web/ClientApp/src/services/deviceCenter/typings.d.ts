@@ -73,7 +73,8 @@ declare namespace API {
   };
 
   type getProductsParams = {
-    sorting?: string;
+    keyword?: string;
+    sorter?: string;
     pageNumber?: number;
     pageSize?: number;
   };
@@ -92,7 +93,7 @@ declare namespace API {
 
   type getParams = {
     keyword?: string;
-    sorting?: string;
+    sorter?: string;
     pageNumber?: number;
     pageSize?: number;
   };

@@ -12,6 +12,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：自动绑定TenantStoreOptions配置
+
+    修改标识：QingRain - 20211115
+    修改描述：添加排序解释器模型绑定提供者
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -52,8 +55,14 @@ namespace QingStack.DeviceCenter.API.Extensions.Hosting
                     options.TokenValidationParameters.ValidateAudience = false;
                     options.TokenValidationParameters.NameClaimType = ClaimTypes.Name;
                 });
-                //自动绑定配置
+                //多租户自动绑定配置
                 services.Configure<TenantStoreOptions>(configuration);
+
+                //注入模型绑定提供者
+                services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+                {
+                    options.ModelBinderProviders.Add(new ModelBinding.SortingBinderProvider());
+                });
             });
         }
     }
