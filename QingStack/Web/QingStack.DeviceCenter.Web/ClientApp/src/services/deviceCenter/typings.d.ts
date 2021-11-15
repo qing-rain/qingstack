@@ -79,7 +79,7 @@ declare namespace API {
     pageSize?: number;
   };
 
-  type getParams = {
+  type getProductParams = {
     id: string;
   };
 

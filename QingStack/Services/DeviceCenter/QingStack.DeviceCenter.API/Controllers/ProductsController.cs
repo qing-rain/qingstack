@@ -38,8 +38,8 @@ namespace QingStack.DeviceCenter.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(ProductPermissions.Products.Default)]
-        public async Task<ProductGetResponseModel> Get(Guid id)
+        //[Authorize(ProductPermissions.Products.Default)]
+        public async Task<ProductGetResponseModel> GetProduct(Guid id)
         {
             return await _productService.GetAsync(id);
         }
