@@ -8,10 +8,11 @@
  */
 export default {
   dev: {
-    '/api/': {
-      target: 'https://preview.pro.ant.design',
+    '/api': {
+      target: 'https://localhost:6001',
       changeOrigin: true,
       pathRewrite: { '^': '' },
+      secure: false,
     },
   },
   test: {

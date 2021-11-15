@@ -55,6 +55,12 @@
     component: './customer/index',
   },
   {
+    name: 'list.product.table',
+    path: '/products',
+    icon: 'RadarChartOutlined',
+    component: './products',
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },

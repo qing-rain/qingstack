@@ -20,7 +20,7 @@ namespace QingStack.DeviceCenter.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "role2")]
+    //[Authorize(Roles = "role2")]
     public class ProductsController : ControllerBase
     {
         private readonly IProductApplicationService _productService;
@@ -31,8 +31,8 @@ namespace QingStack.DeviceCenter.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(ProductPermissions.Products.Default)]
-        public async Task<PagedResponseModel<ProductGetResponseModel>> Get([FromQuery] PagedRequestModel model)
+        //[Authorize(ProductPermissions.Products.Default)]
+        public async Task<PagedResponseModel<ProductGetResponseModel>> GetProducts([FromQuery] PagedRequestModel model)
         {
             return await _productService.GetListAsync(model);
         }

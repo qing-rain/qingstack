@@ -16,6 +16,9 @@
     修改标识：QingRain - 20211113
     修改描述：调整Swagger配置
 
+    修改标识：QingRain - 20211115
+    修改描述：调整Swagger支持不可空引用类型、注入参数转换过滤器
+
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,6 +30,7 @@ using QingStack.DeviceCenter.API.Extensions.Tenants;
 using QingStack.DeviceCenter.API.Infrastructure.Swagger;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace QingStack.DeviceCenter.API
 {
@@ -47,9 +51,15 @@ namespace QingStack.DeviceCenter.API
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Device Center API", Version = "v1" });
+                //支持不可空引用类型
+                c.SupportNonNullableReferenceTypes();
+                c.UseAllOfToExtendReferenceSchemas();
+                
                 //注入操作过滤器
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
-
+                //注入参数转换过滤器
+                c.OperationFilter<CamelCaseNamingOperationFilter>();
+                c.CustomOperationIds(api => $"{JsonNamingPolicy.CamelCase.ConvertName(api.ActionDescriptor.RouteValues["action"])}");
                 //点击锁进行授权登录
                 string identityServer = Configuration.GetValue<string>("IdentityServer:AuthorizationUrl");
 
