@@ -12,6 +12,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：租户切换
+
+    修改标识：QingRain - 20211116
+    修改描述：增加创建日期赋值
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate;
 using QingStack.DeviceCenter.Domain.Aggregates.TenantAggregate;
@@ -51,7 +54,7 @@ namespace QingStack.DeviceCenter.Domain.Services.Products
                     //租户切换
                     using (_currentTenant.Change(tenantId))
                     {
-                        var product = new Product { Name = $"Product{i.ToString().PadLeft(2, '0')}" };
+                        var product = new Product { Name = $"Product{i.ToString().PadLeft(2, '0')}", CreationTime = DateTimeOffset.Now };
                         await _productRepository.InsertAsync(product, true);
                     }
                 }

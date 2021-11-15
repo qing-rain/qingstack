@@ -24,7 +24,7 @@ export async function getProducts(
 }
 
 /** 此处后端没有提供注释 POST /api/Products */
-export async function post(
+export async function postProduct(
   body: API.ProductCreateOrUpdateRequestModel,
   options?: { [key: string]: any },
 ) {

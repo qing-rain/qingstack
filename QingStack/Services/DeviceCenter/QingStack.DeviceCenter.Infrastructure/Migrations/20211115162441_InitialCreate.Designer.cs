@@ -9,8 +9,8 @@ using QingStack.DeviceCenter.Infrastructure.EntityFrameworks;
 namespace QingStack.DeviceCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(DeviceCenterDbContext))]
-    [Migration("20211114112937_AddIdempotency")]
-    partial class AddIdempotency
+    [Migration("20211115162441_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -107,6 +107,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");

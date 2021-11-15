@@ -106,6 +106,9 @@ namespace QingStack.DeviceCenter.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 

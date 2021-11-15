@@ -9,6 +9,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：实现软删除、多租户接口
+
+    修改标识：QingRain - 20211116
+    修改描述：增加创建日期属性
  ----------------------------------------------------------------*/
 using QingStack.DeviceCenter.Domain.Entities;
 using System;
@@ -41,6 +44,10 @@ namespace QingStack.DeviceCenter.Domain.Aggregates.ProductAggregate
         /// 删除标记
         /// </summary>
         public bool IsDeleted { get; set; }
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTimeOffset CreationTime { get; set; }
 
         /// <summary>
         /// 租户标识
