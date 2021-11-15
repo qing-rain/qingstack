@@ -49,6 +49,12 @@
     component: './TableList',
   },
   {
+    name: 'list.customer.table',
+    path: '/customer',
+    icon: 'AppleOutlined',
+    component: './customer/index',
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },
