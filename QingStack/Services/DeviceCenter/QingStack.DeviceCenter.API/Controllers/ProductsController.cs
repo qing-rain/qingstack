@@ -61,7 +61,7 @@ namespace QingStack.DeviceCenter.API.Controllers
         //[Authorize(ProductPermissions.Products.Delete)]
         public async Task DeleteProduct(Guid id)
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            //await Task.Delay(TimeSpan.FromSeconds(5));
             await _productService.DeleteAsync(id);
         }
     }
