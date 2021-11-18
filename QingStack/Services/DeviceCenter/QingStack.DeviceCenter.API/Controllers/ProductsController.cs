@@ -7,11 +7,9 @@
 
     创建标识：QingRain - 20211111
  ----------------------------------------------------------------*/
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QingStack.DeviceCenter.Application.Models.Generics;
 using QingStack.DeviceCenter.Application.Models.Products;
-using QingStack.DeviceCenter.Application.PermissionProviders;
 using QingStack.DeviceCenter.Application.Services.Products;
 using System;
 using System.Threading.Tasks;

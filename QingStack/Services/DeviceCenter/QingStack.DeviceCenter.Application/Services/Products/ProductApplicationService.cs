@@ -43,5 +43,20 @@ namespace QingStack.DeviceCenter.Application.Services.Products
         {
             return await Repository.GetAsync(p => p.Name == productName);
         }
+        /// <summary>
+        /// 导航属性方法使用方式
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Product> GetProductForRelated()
+        {
+            Product product = await Repository.GetAsync(Guid.NewGuid(), false);
+
+            await Repository.LoadRelatedAsync(product, e => e.Devices);
+            await Repository.LoadRelatedAsync(product, e => e.Name);
+
+            product = (await Repository.IncludeRelatedAsync(e => e.Devices!, e => e.Name)).Where(e => e.Id == Guid.NewGuid()).First();
+
+            return product;
+        }
     }
 }

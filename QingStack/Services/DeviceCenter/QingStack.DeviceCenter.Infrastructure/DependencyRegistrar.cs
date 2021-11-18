@@ -18,6 +18,9 @@
 
     修改标识：QingRain - 20211114
     修改描述：注入幂等性模型管理器服务
+
+    修改标识：QingRain - 20211118
+    修改描述：增加产品导航属性配置
  ----------------------------------------------------------------*/
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -94,6 +97,12 @@ namespace QingStack.DeviceCenter.Infrastructure
             services.AddTransient<IPermissionGrantRepository, PermissionGrantRepository>();
 
             services.AddTransient<IRequestManager, RequestManager>();
+
+            //增加产品导航属性配置
+            services.Configure<IncludeRelatedPropertiesOptions>(options =>
+            {
+                options.ConfigIncludes<Product>(e => e.Include(e => e.Devices).ThenInclude(e => e.Address));
+            });
             return services;
         }
     }

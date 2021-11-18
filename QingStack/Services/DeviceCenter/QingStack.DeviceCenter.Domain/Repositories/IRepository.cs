@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace QingStack.DeviceCenter.Domain.Repositories
 {
-    public interface IRepository<TEntity> where TEntity : BaseEntity
+    public partial interface IRepository<TEntity> where TEntity : BaseEntity
     {
         /// <summary>
         /// 
@@ -35,6 +35,7 @@ namespace QingStack.DeviceCenter.Domain.Repositories
         /// <returns></returns>
         Task<TEntity> InsertAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
 
+        Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         Task DeleteAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
         /// <summary>
         /// 删除指定条件实体
@@ -44,15 +45,17 @@ namespace QingStack.DeviceCenter.Domain.Repositories
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task DeleteAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
-
+        Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         Task<TEntity> UpdateAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
+
+        Task UpdateManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         /// <summary>
         /// 查询实体
         /// </summary>
-        /// <param name="includeDetails">是否查询外键关联实体</param>
+        /// <param name="includeRelated">是否查询外键关联实体</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<List<TEntity>> GetListAsync(bool includeDetails = false, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetListAsync(bool includeRelated = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询表记录
@@ -67,33 +70,30 @@ namespace QingStack.DeviceCenter.Domain.Repositories
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="sorting">l排序表达式</param>
-        /// <param name="includeDetails">是否查询外键关联实体</param>
+        /// <param name="includeRelated">是否查询外键关联实体</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<List<TEntity>> GetListAsync(int pageNumber, int pageSize, Expression<Func<TEntity, object>> sorting, bool includeDetails = false, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetListAsync(int pageNumber, int pageSize, Expression<Func<TEntity, object>> sorting, bool includeRelated = false, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 根据表达式获取详情数据
-        /// </summary>
-        IQueryable<TEntity> WithDetails(params Expression<Func<TEntity, object>>[] propertySelectors);
+
 
         /// <summary>
         /// 查询满足条件的第一条数据
         /// </summary>
         /// <param name="predicate">查询表达式</param>
-        /// <param name="includeDetails"></param>
+        /// <param name="includeRelated"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TEntity?> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<TEntity?> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeRelated = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询满足条件的数据 未查到返回异常
         /// </summary>
         /// <param name="predicate"></param>
-        /// <param name="includeDetails"></param>
+        /// <param name="includeRelated"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeRelated = true, CancellationToken cancellationToken = default);
         /// <summary>
         /// 规约查询集合
         /// </summary>
@@ -147,9 +147,11 @@ namespace QingStack.DeviceCenter.Domain.Repositories
     {
         Task DeleteAsync(TKey id, bool autoSave = false, CancellationToken cancellationToken = default);
 
-        Task<TEntity> GetAsync(TKey id, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<TEntity> GetAsync(TKey id, bool includeRelated = true, CancellationToken cancellationToken = default);
 
-        Task<TEntity?> FindAsync(TKey id, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<TEntity?> FindAsync(TKey id, bool includeRelated = true, CancellationToken cancellationToken = default);
+
+        Task DeleteManyAsync(IEnumerable<TKey> ids, bool autoSave = false, CancellationToken cancellationToken = default);
     }
 
 }

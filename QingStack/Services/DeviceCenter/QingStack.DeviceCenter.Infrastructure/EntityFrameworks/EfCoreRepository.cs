@@ -8,6 +8,8 @@
     创建标识：QingRain - 20211108
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Options;
 using QingStack.DeviceCenter.Domain.Entities;
 using QingStack.DeviceCenter.Domain.Exceptions;
 using QingStack.DeviceCenter.Domain.Repositories;
@@ -72,9 +74,9 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             }
         }
 
-        public virtual async Task<TEntity?> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity?> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeRelated = true, CancellationToken cancellationToken = default)
         {
-            return includeDetails ? await WithDetails().Where(predicate).SingleOrDefaultAsync(cancellationToken) : await Query.Where(predicate).SingleOrDefaultAsync(cancellationToken);
+            return includeRelated ? await (await IncludeRelatedAsync()).Where(predicate).SingleOrDefaultAsync(cancellationToken) : await Query.Where(predicate).SingleOrDefaultAsync(cancellationToken);
         }
 
         public virtual async Task<long> GetCountAsync(CancellationToken cancellationToken = default)
@@ -82,14 +84,14 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             return await DbSet.LongCountAsync(cancellationToken);
         }
 
-        public virtual async Task<List<TEntity>> GetListAsync(bool includeDetails = false, CancellationToken cancellationToken = default)
+        public virtual async Task<List<TEntity>> GetListAsync(bool includeRelated = false, CancellationToken cancellationToken = default)
         {
-            return includeDetails ? await WithDetails().ToListAsync(cancellationToken) : await DbSet.ToListAsync(cancellationToken);
+            return includeRelated ? await (await IncludeRelatedAsync()).ToListAsync(cancellationToken) : await DbSet.ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<List<TEntity>> GetListAsync(int pageNumber, int pageSize, Expression<Func<TEntity, object>> sorting, bool includeDetails = false, CancellationToken cancellationToken = default)
+        public virtual async Task<List<TEntity>> GetListAsync(int pageNumber, int pageSize, Expression<Func<TEntity, object>> sorting, bool includeRelated = false, CancellationToken cancellationToken = default)
         {
-            var queryable = includeDetails ? WithDetails() : Query;
+            var queryable = includeRelated ? (await IncludeRelatedAsync()) : Query;
 
             return await queryable.OrderBy(sorting).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
         }
@@ -120,9 +122,9 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             return updatedEntity;
         }
 
-        public virtual async Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeRelated = true, CancellationToken cancellationToken = default)
         {
-            var entity = await FindAsync(predicate, includeDetails, cancellationToken);
+            var entity = await FindAsync(predicate, includeRelated, cancellationToken);
 
             if (entity is null)
             {
@@ -132,58 +134,41 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             return entity;
         }
 
-        public virtual IQueryable<TEntity> WithDetails(params Expression<Func<TEntity, object>>[] propertySelectors)
-        {
-            var query = Query;
 
-            if (propertySelectors is not null)
-            {
-                foreach (var propertySelector in propertySelectors)
-                {
-                    query = query.Include(propertySelector);
-                }
-            }
-            else
-            {
-                query = DefaultWithDetailsFunc(Query);
-            }
-
-            return query;
-        }
 
         #region Specification Pattern
 
-        public async Task<List<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
+        public virtual async Task<List<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
         {
             return await ApplySpecification(specification).ToListAsync(cancellationToken);
         }
 
-        public async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
+        public virtual async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
         {
             return await ApplySpecification(specification).ToListAsync(cancellationToken);
         }
 
-        public async Task<long> GetCountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
+        public virtual async Task<long> GetCountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
         {
             return await ApplySpecification(specification).CountAsync(cancellationToken);
         }
 
-        public async Task<TEntity> GetAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
         {
             return (await GetListAsync(specification, cancellationToken)).FirstOrDefault()!;
         }
 
-        public async Task<TResult> GetAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
+        public virtual async Task<TResult> GetAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
         {
             return (await GetListAsync(specification, cancellationToken)).FirstOrDefault()!;
         }
 
-        protected IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
+        protected virtual IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
         {
             return _specification.GetQuery(Query, specification);
         }
 
-        protected IQueryable<TResult> ApplySpecification<TResult>(ISpecification<TEntity, TResult> specification)
+        protected virtual IQueryable<TResult> ApplySpecification<TResult>(ISpecification<TEntity, TResult> specification)
         {
             if (specification is null) throw new ArgumentNullException(nameof(specification));
             if (specification.Selector is null) throw new SelectorNotFoundException();
@@ -191,7 +176,63 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             return _specification.GetQuery(Query, specification);
         }
 
+        public virtual async Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        {
+            await DbSet.AddRangeAsync(entities, cancellationToken);
+
+            if (autoSave)
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        {
+            DbSet.RemoveRange(entities);
+            if (autoSave)
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        public virtual async Task UpdateManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        {
+            DbSet.UpdateRange(entities);
+            if (autoSave)
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+
         #endregion
+        public virtual async Task<IQueryable<TEntity>> IncludeRelatedAsync(params Expression<Func<TEntity, object>>[] propertySelectors)
+        {
+            var includes = _dbContext.GetService<IOptions<IncludeRelatedPropertiesOptions>>().Value;
+            IQueryable<TEntity> query = Query;
+            if (propertySelectors is not null)
+            {
+                propertySelectors.ToList().ForEach(propertySelector =>
+                {
+                    query = query.Include(propertySelector);
+                });
+            }
+            else
+            {
+                query = includes.Get<TEntity>()(query);
+            }
+            return await Task.FromResult(query);
+        }
+
+        public virtual async Task LoadRelatedAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>?>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class
+        {
+            await _dbContext.Entry(entity).Collection(propertyExpression).LoadAsync(cancellationToken);
+        }
+
+        public virtual async Task LoadRelatedAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class
+        {
+            await _dbContext.Entry(entity).Reference(propertyExpression).LoadAsync(cancellationToken);
+        }
 
         public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> DefaultWithDetailsFunc => query => query;
     }
@@ -200,9 +241,9 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
     {
         public EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
 
-        public virtual async Task<TEntity> GetAsync(TKey id, bool includeDetails = true, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetAsync(TKey id, bool includeRelated = true, CancellationToken cancellationToken = default)
         {
-            var entity = await FindAsync(id, includeDetails, cancellationToken);
+            var entity = await FindAsync(id, includeRelated, cancellationToken);
 
             if (entity is null)
             {
@@ -212,9 +253,9 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             return entity;
         }
 
-        public virtual async Task<TEntity?> FindAsync(TKey id, bool includeDetails = true, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity?> FindAsync(TKey id, bool includeRelated = true, CancellationToken cancellationToken = default)
         {
-            return includeDetails ? await WithDetails().FirstOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken) : await DbSet.FindAsync(new object[] { id! }, cancellationToken);
+            return includeRelated ? await (await IncludeRelatedAsync()).FirstOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken) : await DbSet.FindAsync(new object[] { id! }, cancellationToken);
         }
 
         public virtual async Task DeleteAsync(TKey id, bool autoSave = false, CancellationToken cancellationToken = default)
@@ -226,6 +267,13 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
             }
 
             await DeleteAsync(entity, autoSave, cancellationToken);
+        }
+
+        public virtual async Task DeleteManyAsync(IEnumerable<TKey> ids, bool autoSave = false, CancellationToken cancellationToken = default)
+        {
+            var entities = await base.DbSet.Where(e => ids.Contains(e.Id)).ToListAsync(cancellationToken);
+
+            await DeleteManyAsync(entities, autoSave, cancellationToken);
         }
     }
 }
