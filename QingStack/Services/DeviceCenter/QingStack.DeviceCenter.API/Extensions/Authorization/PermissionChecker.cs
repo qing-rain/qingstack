@@ -72,10 +72,7 @@ namespace QingStack.DeviceCenter.API.Extensions.Authorization
             return isGranted;
         }
 
-        public Task<MultiplePermissionGrantResult> IsGrantedAsync([NotNull] string[] names)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<MultiplePermissionGrantResult> IsGrantedAsync([NotNull] string[] names) => await IsGrantedAsync(_httpContextAccessor.HttpContext!.User, names);
 
         public async Task<MultiplePermissionGrantResult> IsGrantedAsync([MaybeNull] ClaimsPrincipal claimsPrincipal, [NotNull] string[] names)
         {

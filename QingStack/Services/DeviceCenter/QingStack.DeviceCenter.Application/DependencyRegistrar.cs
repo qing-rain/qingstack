@@ -98,7 +98,7 @@ namespace QingStack.DeviceCenter.Application
             //注入权限授予结果仓储
             services.AddTransient<IPermissionStore, PermissionStore>();
             //权限定义管理器
-            services.AddSingleton<IPermissionDefinitionManager, PermissionDefinitionManager>();
+            services.AddTransient<IPermissionDefinitionManager, PermissionDefinitionManager>();
 
             var exportedTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).Where(t => t.IsClass);
 

@@ -86,6 +86,7 @@
     path: '/products',
     icon: 'RadarChartOutlined',
     component: './products',
+    access: 'ProductManager.Products',
   },
   {
     path: '/',

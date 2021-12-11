@@ -22,6 +22,9 @@
     修改标识：QingRain - 20211115
     修改描述：Swagger配置排序解释器输入方式
 
+    修改标识：QingRain - 20211212
+    修改描述：调整租户中间件拦截执行顺序
+
  ----------------------------------------------------------------*/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -119,10 +122,12 @@ namespace QingStack.DeviceCenter.API
             app.UseRouting();
 
             //认证、授权
-            app.UseAuthentication().UseAuthorization();
+            app.UseAuthentication();
 
             //注入多租户中间件拦截
             app.UseTenantMiddleware();
+
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -1,7 +1,16 @@
 declare namespace API {
+  type ApplicationConfiguration = {
+    permissions?: PermissionConfiguration;
+  };
+
   type CreateProjectCommand = {
     name?: string;
     creationTime?: string;
+  };
+
+  type PermissionConfiguration = {
+    policies?: Record<string, any>;
+    grantedPolicies?: Record<string, any>;
   };
 
   type PermissionGrantModel = {

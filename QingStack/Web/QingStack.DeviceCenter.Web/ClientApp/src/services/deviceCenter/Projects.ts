@@ -5,13 +5,7 @@ import { request } from 'umi';
 /** 此处后端没有提供注释 GET /api/Projects */
 export async function get(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getParams & {
-    // query
-    keyword?: string;
-    sorter?: string;
-    pageNumber?: number;
-    pageSize?: number;
-  },
+  params: API.getParams,
   options?: { [key: string]: any },
 ) {
   return request<API.ProjectGetResponseModelPagedResponseModel>('/api/Projects', {
@@ -47,10 +41,7 @@ export async function post(
 /** 此处后端没有提供注释 GET /api/Projects/${param0} */
 export async function get_2(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.get_2Params & {
-    // path
-    id: number;
-  },
+  params: API.get_2Params,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
@@ -64,10 +55,7 @@ export async function get_2(
 /** 此处后端没有提供注释 PUT /api/Projects/${param0} */
 export async function put(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.putParams & {
-    // path
-    id: number;
-  },
+  params: API.putParams,
   body: API.ProjectCreateOrUpdateRequestModel,
   options?: { [key: string]: any },
 ) {
@@ -86,10 +74,7 @@ export async function put(
 /** 此处后端没有提供注释 DELETE /api/Projects/${param0} */
 export async function deleteUsingDELETE(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.deleteUsingDELETEParams & {
-    // path
-    id: number;
-  },
+  params: API.deleteUsingDELETEParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;

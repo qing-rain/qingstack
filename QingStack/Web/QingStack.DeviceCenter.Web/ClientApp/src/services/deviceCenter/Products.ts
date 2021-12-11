@@ -5,13 +5,7 @@ import { request } from 'umi';
 /** 此处后端没有提供注释 GET /api/Products */
 export async function getProducts(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getProductsParams & {
-    // query
-    keyword?: string;
-    sorter?: string;
-    pageNumber?: number;
-    pageSize?: number;
-  },
+  params: API.getProductsParams,
   options?: { [key: string]: any },
 ) {
   return request<API.ProductGetResponseModelPagedResponseModel>('/api/Products', {
@@ -41,10 +35,7 @@ export async function postProduct(
 /** 此处后端没有提供注释 GET /api/Products/${param0} */
 export async function getProduct(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getProductParams & {
-    // path
-    id: string;
-  },
+  params: API.getProductParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
@@ -58,10 +49,7 @@ export async function getProduct(
 /** 此处后端没有提供注释 PUT /api/Products/${param0} */
 export async function putProduct(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.putProductParams & {
-    // path
-    id: string;
-  },
+  params: API.putProductParams,
   body: API.ProductCreateOrUpdateRequestModel,
   options?: { [key: string]: any },
 ) {
@@ -80,10 +68,7 @@ export async function putProduct(
 /** 此处后端没有提供注释 DELETE /api/Products/${param0} */
 export async function deleteProduct(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.deleteProductParams & {
-    // path
-    id: string;
-  },
+  params: API.deleteProductParams,
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;

@@ -1,6 +1,6 @@
-import { PageLoading } from "@ant-design/pro-layout";
-import React, { useEffect } from "react";
-import { userManager } from "../services/AuthorizeService";
+import { PageLoading } from '@ant-design/pro-layout';
+import React, { useEffect } from 'react';
+import { userManager } from '../services/AuthorizeService';
 
 const UserLogoutCallback: React.FC = () => {
   useEffect(() => {
@@ -11,7 +11,7 @@ const UserLogoutCallback: React.FC = () => {
     fetchRedirect();
   }, []);
 
-  return <PageLoading tip='Loading...' />;
+  return <PageLoading tip="Loading..." />;
 };
 
 export default UserLogoutCallback;

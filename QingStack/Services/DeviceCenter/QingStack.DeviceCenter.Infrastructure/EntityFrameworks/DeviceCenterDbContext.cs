@@ -18,6 +18,9 @@
 
     修改标识: QingRain - 20211114
     修改描述：多租户注入服务获取方式调整
+
+    修改标识: QingRain - 20211212
+    修改描述：重构并修复多租户数据筛选器
  ----------------------------------------------------------------*/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -47,25 +50,21 @@ namespace QingStack.DeviceCenter.Infrastructure.EntityFrameworks
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            ///扫描当前执行程序集所有配置
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            foreach (IMutableEntityType entityType in
+            modelBuilder.Model.GetEntityTypes())
             {
-                //实现多租户接口
                 if (entityType.ClrType.IsAssignableTo(typeof(IMultiTenant)))
                 {
-                    //当前上下文服务
-                    ICurrentTenant? currentTenant = this.GetInfrastructure().GetService<ICurrentTenant>();
-                    if (currentTenant is not null)
-                    {
-                        modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e => e.TenantId == currentTenant.Id);
-                    }
+                    modelBuilder.Entity(entityType.ClrType).AddQueryFilter<IMultiTenant>(e =>
+                    e.TenantId == this.GetService<ICurrentTenant>().Id);
                 }
-                //实现软删除接口
                 if (entityType.ClrType.IsAssignableTo(typeof(ISoftDelete)))
                 {
-                    modelBuilder.Entity(entityType.ClrType).AddQueryFilter<ISoftDelete>(e => !e.IsDeleted);
+
+                    modelBuilder.Entity(entityType.ClrType).AddQueryFilter<ISoftDelete>(e => !
+                    e.IsDeleted);
                 }
             }
             base.OnModelCreating(modelBuilder);
