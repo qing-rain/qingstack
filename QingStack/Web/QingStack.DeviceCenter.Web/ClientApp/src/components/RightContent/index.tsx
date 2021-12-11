@@ -1,5 +1,5 @@
 import { Space } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { CloudSyncOutlined } from '@ant-design/icons';
 import React from 'react';
 import { useModel, SelectLang } from 'umi';
 import Avatar from './AvatarDropdown';
@@ -25,10 +25,10 @@ const GlobalHeaderRight: React.FC = () => {
       <span
         className={styles.action}
         onClick={() => {
-          window.open('https://pro.ant.design/docs/getting-started');
+          window.open('https://www.qingrain.com');
         }}
       >
-        <QuestionCircleOutlined />
+        <CloudSyncOutlined />
       </span>
       <Avatar />
       <SelectLang className={styles.action} />

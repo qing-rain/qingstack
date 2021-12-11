@@ -57,6 +57,7 @@
     "classnames": "^2.2.6",
     "lodash": "^4.17.11",
     "moment": "^2.25.3",
+    "oidc-client": "^1.11.5",
     "omit.js": "^2.0.2",
     "rc-menu": "^9.0.13",
     "rc-util": "^5.14.0",
@@ -65,6 +66,7 @@
     "react-dom": "^17.0.0",
     "react-helmet-async": "^1.0.4",
     "umi": "^3.5.0",
+    "umi-plugin-setting-drawer": "^1.0.6",
     "umi-serve": "^1.9.10"
   },
   "devDependencies": {
@@ -84,6 +86,7 @@
     "@umijs/preset-ant-design-pro": "^1.2.0",
     "@umijs/preset-dumi": "^1.1.7",
     "@umijs/preset-react": "^1.8.17",
+    "@umijs/preset-ui": "^2.2.9",
     "@umijs/yorkie": "^2.0.3",
     "carlo": "^0.9.46",
     "cross-env": "^7.0.0",

@@ -1,4 +1,31 @@
 ﻿export default [
+
+  {
+    path: '/authorization',
+    layout: false,
+    routes: [
+      {
+        name: 'login',
+        path: '/authorization/login',
+        component: './authorization/login',
+      },
+      {
+        path: '/authorization/login-callback',
+        component: './authorization/login-callback',
+      },
+      {
+        path: '/authorization/logout',
+        component: './authorization/logout',
+      },
+      {
+        path: '/authorization/logout-callback',
+        component: './authorization/logout-callback',
+      },
+      {
+        component: './404',
+      }
+    ],
+  },
   {
     path: '/user',
     layout: false,

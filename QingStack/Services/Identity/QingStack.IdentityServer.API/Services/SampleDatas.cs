@@ -127,17 +127,11 @@ namespace QingStack.IdentityServer.API.Services
                 RequireConsent = true,
                 RedirectUris = {
                     "http://localhost:8000/authorization/login-callback",
-                    "http://localhost:8000/authorization/logincallback",
-                    "https://cloud.sctshd.com/authorization/logincallback",
-                    "http://localhost:8000/login-callback.html",
-                    "https://cloud.qingrain.cn:8001/authorization/login-callback"
+
                 },
                 PostLogoutRedirectUris = {
                     "http://localhost:8000/authorization/logout-callback",
-                    "http://localhost:8000/authorization/logoutcallback",
-                    "https://cloud.sctshd.com/authorization/logoutcallback",
-                    "http://localhost:8000/logout-callback.html",
-                    "https://cloud.qingrain.cn:8001/authorization/logout-callback"
+
                 },
                 AllowOfflineAccess=true,
                 RequirePkce = true,
@@ -149,7 +143,9 @@ namespace QingStack.IdentityServer.API.Services
                     "openapi",
                     "identityserver",
                     "devicecenter"
-                }
+                },
+                AllowedCorsOrigins = { "http://localhost:8000"},
+                AccessTokenLifetime = 36000
             }
         };
 
