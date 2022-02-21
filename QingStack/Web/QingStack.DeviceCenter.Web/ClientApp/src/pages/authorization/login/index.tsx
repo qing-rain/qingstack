@@ -10,12 +10,11 @@ const UserLogin: React.FC = () => {
 
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get('returnUrl') || window.location.origin;
-
       await userManager.signinRedirect({ state: returnUrl });
     }
     signinRedirect();
   }, []);
-  return <PageLoading tip='Loading...' />;
+  return <PageLoading tip="Loading..." />;
 };
 
 export default UserLogin;

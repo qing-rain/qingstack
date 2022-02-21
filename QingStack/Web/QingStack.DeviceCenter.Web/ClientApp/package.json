@@ -66,7 +66,7 @@
     "react-dom": "^17.0.0",
     "react-helmet-async": "^1.0.4",
     "umi": "^3.5.0",
-    "umi-plugin-setting-drawer": "^1.0.6",
+    "umi-plugin-setting-drawer": "^1.0.5",
     "umi-serve": "^1.9.10"
   },
   "devDependencies": {

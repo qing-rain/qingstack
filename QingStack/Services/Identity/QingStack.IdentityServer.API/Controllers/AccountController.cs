@@ -52,6 +52,13 @@ namespace QingStack.IdentityServer.API.Controllers
             _distributedCache = distributedCache;
             _smsSender = smsSender;
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> AutoLogin(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
         /// <summary>
         /// 登录界面
         /// </summary>
